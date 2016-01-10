@@ -10,6 +10,7 @@
 class Note
 {
     public:
+        Note();
         Note(const QString &title, const QString &content);
         QString title() const;
         QString content() const;

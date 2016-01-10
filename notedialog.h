@@ -9,11 +9,13 @@ class NoteDialog : public QDialog
 
     public:
         NoteDialog(QWidget *parent = 0);
-        QString note() const;
+        QString content() const;
         QString title() const;
+        void setContent(const QString & content);
+        void setTitle(const QString & content);
 
     private:
-        QTextEdit *m_note;
+        QTextEdit *m_content;
         QLineEdit *m_title;
 };
 

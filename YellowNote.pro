@@ -8,10 +8,12 @@ SOURCES += \
     mainwindow.cpp \
     notelabel.cpp \
     notedialog.cpp \
-    note.cpp
+    note.cpp \
+    notelistwidgetitem.cpp
 
 HEADERS += \
     mainwindow.h \
     notelabel.h \
     notedialog.h \
-    note.h
+    note.h \
+    notelistwidgetitem.h

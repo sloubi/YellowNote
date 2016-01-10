@@ -1,8 +1,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QObject>
 #include <QtWidgets>
 #include <QtSql>
+#include "notelistwidgetitem.h"
 #include "notelabel.h"
 #include "notedialog.h"
 #include "note.h"
@@ -25,7 +27,7 @@ public slots:
 private slots:
     void addNoteFromDialog();
     void save();
-    void doSomething(QListWidgetItem *item);
+    void openEditNoteDialog(QListWidgetItem *item);
 
 private:
     QListWidget *m_listWidget;

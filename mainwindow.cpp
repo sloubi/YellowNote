@@ -25,15 +25,10 @@ MainWindow::MainWindow(bool *hotkeyLoop) : QWidget()
 
     QObject::connect(addButton, SIGNAL(clicked()), this, SLOT(openNoteDialog()));
     QObject::connect(saveButton, SIGNAL(clicked()), this, SLOT(save()));
-    QObject::connect(m_listWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(doSomething(QListWidgetItem*)));
+    QObject::connect(m_listWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openEditNoteDialog(QListWidgetItem*)));
 
     initialize();
     m_hotkeyLoop = hotkeyLoop;
-}
-
-void MainWindow::doSomething(QListWidgetItem *item)
-{
-    qDebug() << "double click";
 }
 
 void MainWindow::initialize()
@@ -62,19 +57,32 @@ void MainWindow::openNoteDialog()
     QObject::connect(m_dialog, SIGNAL(accepted()), this, SLOT(addNoteFromDialog()));
 }
 
+void MainWindow::openEditNoteDialog(QListWidgetItem *item)
+{
+    NoteListWidgetItem *noteItem = static_cast<NoteListWidgetItem*>(item);
+
+    m_dialog = new NoteDialog(this);
+    m_dialog->setTitle(noteItem->note().title());
+    m_dialog->setContent(noteItem->note().content());
+    m_dialog->show();
+
+    //QObject::connect(m_dialog, SIGNAL(accepted()), this, SLOT(editNoteFromDialog()));
+}
+
 void MainWindow::addNoteLabel(const Note & note)
 {
-    QListWidgetItem* item = new QListWidgetItem(m_listWidget);
+    NoteListWidgetItem *item = new NoteListWidgetItem(m_listWidget);
     m_listWidget->addItem(item);
 
     NoteLabel *label = new NoteLabel(note.title(), note.content());
     item->setSizeHint(label->minimumSizeHint());
+    item->setNote(note);
     m_listWidget->setItemWidget(item, label);
 }
 
 void MainWindow::addNoteFromDialog()
 {
-    Note note(m_dialog->title(), m_dialog->note());
+    Note note(m_dialog->title(), m_dialog->content());
     m_notes.append(note);
     addNoteLabel(note);
     note.addToDb();

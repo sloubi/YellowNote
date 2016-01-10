@@ -1,5 +1,10 @@
 #include "note.h"
 
+Note::Note()
+{
+
+}
+
 Note::Note(const QString & title, const QString & content) : m_title(title), m_content(content)
 {
 
