@@ -1,19 +1,23 @@
 #include "notelabel.h"
 
-NoteLabel::NoteLabel(const QString & title, const QString & text) : QLabel(text)
+NoteLabel::NoteLabel(const QString & title, const QString & content)
 {
     m_title = title;
+    m_content = content;
 
-    setStyleSheet("border: 1px solid blue");
-    setText(m_title + "<br>" + text);
+    print();
 }
 
-void NoteLabel::setTitle(const QString & text)
+NoteLabel::NoteLabel(const Note & note)
 {
-    m_title = text;
+    m_title = note.title();
+    m_content = note.content();
+
+    print();
 }
 
-void NoteLabel::dbClicked()
+void NoteLabel::print()
 {
-    QMessageBox::information(this, "Titre de la fenêtre", "coucou");
+    setStyleSheet("padding: 10px;");
+    setText(m_title + "<br><font color='#5C5C5C'>" + m_content + "</font>");
 }

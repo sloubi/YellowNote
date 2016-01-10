@@ -16,27 +16,24 @@ MainWindow::MainWindow(bool *hotkeyLoop) : QWidget()
     buttonsLayout->addWidget(addButton);
     buttonsLayout->addWidget(saveButton);
 
-    QScrollArea *scrollArea = new QScrollArea(this);
-    scrollArea->setWidgetResizable(true);
-
-    m_notesWidget = new QWidget(scrollArea);
-    m_notesWidget->setGeometry(0, 0, 200, 80);
-
-    QVBoxLayout *scrolledLayout = new QVBoxLayout();
-    m_notesWidget->setLayout(scrolledLayout);
-
-    scrollArea->setWidget(m_notesWidget);
+    m_listWidget = new QListWidget();
 
     QVBoxLayout *mainLayout = new QVBoxLayout();
-    mainLayout->addWidget(scrollArea);
     mainLayout->addLayout(buttonsLayout);
+    mainLayout->addWidget(m_listWidget);
     setLayout(mainLayout);
 
     QObject::connect(addButton, SIGNAL(clicked()), this, SLOT(openNoteDialog()));
     QObject::connect(saveButton, SIGNAL(clicked()), this, SLOT(save()));
+    QObject::connect(m_listWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(doSomething(QListWidgetItem*)));
 
     initialize();
     m_hotkeyLoop = hotkeyLoop;
+}
+
+void MainWindow::doSomething(QListWidgetItem *item)
+{
+    qDebug() << "double click";
 }
 
 void MainWindow::initialize()
@@ -67,8 +64,12 @@ void MainWindow::openNoteDialog()
 
 void MainWindow::addNoteLabel(const Note & note)
 {
+    QListWidgetItem* item = new QListWidgetItem(m_listWidget);
+    m_listWidget->addItem(item);
+
     NoteLabel *label = new NoteLabel(note.title(), note.content());
-    m_notesWidget->layout()->addWidget(label);
+    item->setSizeHint(label->minimumSizeHint());
+    m_listWidget->setItemWidget(item, label);
 }
 
 void MainWindow::addNoteFromDialog()

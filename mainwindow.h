@@ -25,9 +25,10 @@ public slots:
 private slots:
     void addNoteFromDialog();
     void save();
+    void doSomething(QListWidgetItem *item);
 
 private:
-    QWidget *m_notesWidget;
+    QListWidget *m_listWidget;
     NoteDialog *m_dialog;
     QList<Note> m_notes;
     bool *m_hotkeyLoop;
