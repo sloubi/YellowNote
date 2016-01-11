@@ -20,6 +20,7 @@ class Note
         void setId(const int id);
         static QList<Note> readFromFile();
         static void writeToFile(const QList<Note> & notes);
+        static void createNotesTableIfNotExists();
         static QList<Note> loadFromDb();
         void addToDb();
 

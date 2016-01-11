@@ -38,14 +38,12 @@ void MainWindow::initialize()
     db.setDatabaseName("notes.db");
 
     m_notes = Note::loadFromDb();
-    if (m_notes.empty())
+    if ( ! m_notes.empty())
     {
-        QMessageBox::warning(this, "Notes introuvable", "Le fichier de stockage des notes est introuvable.");
-    }
-
-    for (int i = 0; i < m_notes.size(); ++i)
-    {
-        addNoteLabel(m_notes.at(i));
+        for (int i = 0; i < m_notes.size(); ++i)
+        {
+            addNoteLabel(m_notes.at(i));
+        }
     }
 }
 
