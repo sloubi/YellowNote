@@ -23,6 +23,8 @@ class Note
         static void createNotesTableIfNotExists();
         static QList<Note> loadFromDb();
         void addToDb();
+        void editInDb();
+        int lastInsertId();
 
     private:
         int m_id;

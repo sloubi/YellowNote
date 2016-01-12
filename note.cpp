@@ -1,3 +1,4 @@
+#include <QDebug>
 #include "note.h"
 
 Note::Note()
@@ -111,5 +112,27 @@ void Note::addToDb()
     q.prepare("INSERT INTO notes('title', 'content') VALUES (:title, :content)");
     q.bindValue(":title", m_title);
     q.bindValue(":content", m_content);
+    q.exec();
+
+    m_id = lastInsertId();
+}
+
+int Note::lastInsertId()
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery q(db);
+    q.exec("SELECT seq FROM sqlite_sequence WHERE name='notes'");
+    q.next();
+    return q.value(0).toInt();
+}
+
+void Note::editInDb()
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery q(db);
+    q.prepare("UPDATE notes SET title = :title, content = :content WHERE id = :id");
+    q.bindValue(":title", m_title);
+    q.bindValue(":content", m_content);
+    q.bindValue(":id", m_id);
     q.exec();
 }

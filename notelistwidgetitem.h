@@ -8,11 +8,11 @@ class NoteListWidgetItem : public QListWidgetItem
 {
 public:
     NoteListWidgetItem(QListWidget *view = 0);
-    Note note() const;
-    void setNote(const Note &note);
+    Note* note() const;
+    void setNote(Note *note);
 
 private:
-    Note m_note;
+    Note *m_note;
 };
 
 #endif // NOTELISTWIDGETITEM_H

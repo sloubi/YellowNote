@@ -18,21 +18,17 @@ public:
 
 protected:
     void initialize();
-    void addNoteLabel(const Note &note);
+    void addNoteLabel(Note *note);
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 public slots:
     void openNoteDialog();
-
-private slots:
-    void addNoteFromDialog();
-    void save();
+    void addNoteFromDialog(NoteDialog *noteDialog);
     void openEditNoteDialog(QListWidgetItem *item);
+    void editNoteFromDialog(NoteDialog *noteDialog);
 
 private:
     QListWidget *m_listWidget;
-    NoteDialog *m_dialog;
-    QList<Note> m_notes;
     bool *m_hotkeyLoop;
 
 };

@@ -24,7 +24,6 @@ MainWindow::MainWindow(bool *hotkeyLoop) : QWidget()
     setLayout(mainLayout);
 
     QObject::connect(addButton, SIGNAL(clicked()), this, SLOT(openNoteDialog()));
-    QObject::connect(saveButton, SIGNAL(clicked()), this, SLOT(save()));
     QObject::connect(m_listWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openEditNoteDialog(QListWidgetItem*)));
 
     initialize();
@@ -37,58 +36,69 @@ void MainWindow::initialize()
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName("notes.db");
 
-    m_notes = Note::loadFromDb();
-    if ( ! m_notes.empty())
+    QList<Note> notes = Note::loadFromDb();
+    if ( ! notes.empty())
     {
-        for (int i = 0; i < m_notes.size(); ++i)
+        for (int i = 0; i < notes.size(); ++i)
         {
-            addNoteLabel(m_notes.at(i));
+            Note *note = new Note();
+            *note = notes.at(i);
+            addNoteLabel(note);
         }
     }
 }
 
 void MainWindow::openNoteDialog()
 {
-    m_dialog = new NoteDialog(this);
-    m_dialog->show();
+    NoteDialog *dialog = new NoteDialog(this);
+    dialog->show();
 
-    QObject::connect(m_dialog, SIGNAL(accepted()), this, SLOT(addNoteFromDialog()));
+    QObject::connect(dialog, SIGNAL(saved(NoteDialog*)), this, SLOT(addNoteFromDialog(NoteDialog*)));
 }
 
 void MainWindow::openEditNoteDialog(QListWidgetItem *item)
 {
     NoteListWidgetItem *noteItem = static_cast<NoteListWidgetItem*>(item);
 
-    m_dialog = new NoteDialog(this);
-    m_dialog->setTitle(noteItem->note().title());
-    m_dialog->setContent(noteItem->note().content());
-    m_dialog->show();
+    NoteDialog *dialog = new NoteDialog(this, noteItem->note());
+    dialog->setItemRow(m_listWidget->row(noteItem));
+    dialog->show();
 
-    //QObject::connect(m_dialog, SIGNAL(accepted()), this, SLOT(editNoteFromDialog()));
+    QObject::connect(dialog, SIGNAL(saved(NoteDialog*)), this, SLOT(editNoteFromDialog(NoteDialog*)));
 }
 
-void MainWindow::addNoteLabel(const Note & note)
+void MainWindow::addNoteLabel(Note *note)
 {
+    NoteLabel *label = new NoteLabel(note->title(), note->content());
+
     NoteListWidgetItem *item = new NoteListWidgetItem(m_listWidget);
-    m_listWidget->addItem(item);
-
-    NoteLabel *label = new NoteLabel(note.title(), note.content());
     item->setSizeHint(label->minimumSizeHint());
-    item->setNote(note);
+    m_listWidget->addItem(item);
     m_listWidget->setItemWidget(item, label);
+
+    item->setNote(note);
 }
 
-void MainWindow::addNoteFromDialog()
+void MainWindow::addNoteFromDialog(NoteDialog *noteDialog)
 {
-    Note note(m_dialog->title(), m_dialog->content());
-    m_notes.append(note);
+    Note *note = new Note(noteDialog->title(), noteDialog->content());
     addNoteLabel(note);
-    note.addToDb();
+    note->addToDb();
 }
 
-void MainWindow::save()
+void MainWindow::editNoteFromDialog(NoteDialog *noteDialog)
 {
-    Note::writeToFile(m_notes);
+    NoteLabel *label = new NoteLabel(noteDialog->title(), noteDialog->content());
+
+    QListWidgetItem *item = m_listWidget->item(noteDialog->itemRow());
+    NoteListWidgetItem *noteItem = static_cast<NoteListWidgetItem*>(item);
+    noteItem->setSizeHint(label->minimumSizeHint());
+    m_listWidget->setItemWidget(item, label);
+
+    noteItem->note()->setTitle(noteDialog->title());
+    noteItem->note()->setContent(noteDialog->content());
+
+    noteItem->note()->editInDb();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
