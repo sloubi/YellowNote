@@ -5,29 +5,54 @@
 #include <QDebug>
 #include "mainwindow.h"
 
-MainWindow::MainWindow(bool *hotkeyLoop) : QWidget()
+MainWindow::MainWindow(bool *hotkeyLoop) : QMainWindow()
 {
     setWindowTitle("YellowNote");
-
-    QPushButton *addButton = new QPushButton("Ajouter une note");
-    QPushButton *saveButton = new QPushButton("Enregistrer");
-
-    QHBoxLayout *buttonsLayout = new QHBoxLayout();
-    buttonsLayout->addWidget(addButton);
-    buttonsLayout->addWidget(saveButton);
 
     m_listWidget = new QListWidget();
 
     QVBoxLayout *mainLayout = new QVBoxLayout();
-    mainLayout->addLayout(buttonsLayout);
     mainLayout->addWidget(m_listWidget);
-    setLayout(mainLayout);
 
-    QObject::connect(addButton, SIGNAL(clicked()), this, SLOT(openNoteDialog()));
+    QWidget *central = new QWidget;
+    central->setLayout(mainLayout);
+    setCentralWidget(central);
+
     QObject::connect(m_listWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openEditNoteDialog(QListWidgetItem*)));
+
+    createMenus();
 
     initialize();
     m_hotkeyLoop = hotkeyLoop;
+}
+
+void MainWindow::createMenus()
+{
+    QAction *actionQuit = new QAction("&Quitter", this);
+    actionQuit->setShortcut(QKeySequence("Ctrl+Q"));
+    connect(actionQuit, SIGNAL(triggered()), this, SLOT(close()));
+
+    QAction *actionNew = new QAction("&Nouvelle note", this);
+    actionNew->setIcon(QIcon(":/note/add"));
+    actionNew->setIconText("Nouvelle Note");
+    actionNew->setShortcut(QKeySequence("Ctrl+N"));
+    connect(actionNew, SIGNAL(triggered()), this, SLOT(openNoteDialog()));
+
+    QAction *actionDelete = new QAction("&Supprimer la note", this);
+    actionDelete->setIcon(QIcon(":/note/delete"));
+    actionDelete->setIconText("Supprimer la note");
+    actionDelete->setShortcut(QKeySequence("Suppr"));
+    connect(actionDelete, SIGNAL(triggered()), this, SLOT(deleteNote()));
+
+    QMenu *menuNotes = menuBar()->addMenu("&Notes");
+    menuNotes->addAction(actionNew);
+    menuNotes->addAction(actionDelete);
+    menuNotes->addAction(actionQuit);
+
+    QToolBar *toolBar = addToolBar("Toolbar");
+    toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    toolBar->addAction(actionNew);
+    toolBar->addAction(actionDelete);
 }
 
 void MainWindow::initialize()
@@ -108,4 +133,24 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     // On laisse la fenêtre se fermer
     event->accept();
+}
+
+void MainWindow::close()
+{
+    // On sort de la boucle infinie des raccourcis globaux
+    *m_hotkeyLoop = false;
+    qApp->quit();
+}
+
+void MainWindow::deleteNote()
+{
+    QList<QListWidgetItem*> selected = m_listWidget->selectedItems();
+    if ( ! selected.empty())
+    {
+        QListWidgetItem *item = selected.first();
+        NoteListWidgetItem *noteItem = static_cast<NoteListWidgetItem*>(item);
+        noteItem->note()->deleteInDb();
+
+        m_listWidget->takeItem(m_listWidget->row(item));
+    }
 }

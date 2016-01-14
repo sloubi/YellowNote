@@ -24,6 +24,7 @@ class Note
         static QList<Note> loadFromDb();
         void addToDb();
         void editInDb();
+        void deleteInDb();
         int lastInsertId();
 
     private:

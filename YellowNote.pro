@@ -1,8 +1,6 @@
 QT += widgets
 QT += sql
 
-RC_FILE = app.rc
-
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
@@ -17,3 +15,8 @@ HEADERS += \
     notedialog.h \
     note.h \
     notelistwidgetitem.h
+
+RC_FILE = app.rc
+
+RESOURCES += \
+    resources.qrc

@@ -9,7 +9,7 @@
 #include "notedialog.h"
 #include "note.h"
 
-class MainWindow : public QWidget
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
@@ -17,6 +17,7 @@ public:
     MainWindow(bool *hotkeyLoop);
 
 protected:
+    void createMenus();
     void initialize();
     void addNoteLabel(Note *note);
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
@@ -26,6 +27,8 @@ public slots:
     void addNoteFromDialog(NoteDialog *noteDialog);
     void openEditNoteDialog(QListWidgetItem *item);
     void editNoteFromDialog(NoteDialog *noteDialog);
+    void close();
+    void deleteNote();
 
 private:
     QListWidget *m_listWidget;

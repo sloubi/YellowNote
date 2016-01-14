@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/note">
+        <file alias="add">note_add.png</file>
+        <file alias="delete">note_delete.png</file>
+    </qresource>
+</RCC>

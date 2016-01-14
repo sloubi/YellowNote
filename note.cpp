@@ -136,3 +136,12 @@ void Note::editInDb()
     q.bindValue(":id", m_id);
     q.exec();
 }
+
+void Note::deleteInDb()
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery q(db);
+    q.prepare("DELETE FROM notes WHERE id = :id");
+    q.bindValue(":id", m_id);
+    q.exec();
+}
