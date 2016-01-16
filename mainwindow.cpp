@@ -44,10 +44,16 @@ void MainWindow::createMenus()
     actionDelete->setShortcut(QKeySequence("Suppr"));
     connect(actionDelete, SIGNAL(triggered()), this, SLOT(deleteNote()));
 
+    QAction *actionAbout = new QAction("&À propos de YellowNote", this);
+    connect(actionAbout, SIGNAL(triggered()), this, SLOT(about()));
+
     QMenu *menuNotes = menuBar()->addMenu("&Notes");
     menuNotes->addAction(actionNew);
     menuNotes->addAction(actionDelete);
     menuNotes->addAction(actionQuit);
+
+    QMenu *menuHelp = menuBar()->addMenu("&Aide");
+    menuHelp->addAction(actionAbout);
 
     QToolBar *toolBar = addToolBar("Toolbar");
     toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
@@ -153,4 +159,46 @@ void MainWindow::deleteNote()
 
         m_listWidget->takeItem(m_listWidget->row(item));
     }
+}
+
+void MainWindow::about()
+{
+    QDialog *dialog = new QDialog(this);
+    dialog->setWindowTitle("À propos de YellowNote");
+
+    QLabel *image = new QLabel(dialog);
+    image->setPixmap(QPixmap(":/note/logo"));
+
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery q(db);
+    q.exec("SELECT sqlite_version()");
+    q.next();
+    QString sqliteVersion = q.value(0).toString();
+
+    QDate builtDate = QLocale(QLocale::English).toDate(QString(__DATE__).simplified(), "MMM d yyyy");
+
+    QString aboutString;
+    aboutString += "<b>YellowNote 0.1</b><br>";
+    aboutString += "Par Sloubi, <a href='http://sloubi.eu'>sloubi.eu</a><br><br>";
+    aboutString += "<font color='#5C5C5C'>Compilé le " + builtDate.toString("dd/MM/yyyy") + " à " + QString(__TIME__) + "<br>";
+    aboutString += "Qt " + QString(QT_VERSION_STR) + "<br>";
+    aboutString += "SQLite " + sqliteVersion + "</font>";
+
+    QLabel *text = new QLabel(dialog);
+    text->setText(aboutString);
+    text->setOpenExternalLinks(true);
+
+    QHBoxLayout *layout = new QHBoxLayout();
+    layout->addWidget(image);
+    layout->addWidget(text);
+
+    QPushButton *close = new QPushButton("&Fermer", this);
+    connect(close, SIGNAL(clicked()), dialog, SLOT(accept()));
+
+    QVBoxLayout *mainLayout = new QVBoxLayout();
+    mainLayout->addLayout(layout);
+    mainLayout->addWidget(close, 0, Qt::AlignRight);
+
+    dialog->setLayout(mainLayout);
+    dialog->show();
 }

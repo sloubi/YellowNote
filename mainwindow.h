@@ -29,6 +29,7 @@ public slots:
     void editNoteFromDialog(NoteDialog *noteDialog);
     void close();
     void deleteNote();
+    void about();
 
 private:
     QListWidget *m_listWidget;
