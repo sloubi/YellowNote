@@ -18,6 +18,14 @@ NoteLabel::NoteLabel(const Note & note)
 
 void NoteLabel::print()
 {
+    QString title = m_title.left(40);
+    if (title != m_title)
+        title += "...";
+
+    QString content = m_content.left(40);
+    if (content != m_content)
+        content += "...";
+
     setStyleSheet("padding: 10px;");
-    setText(m_title + "<br><font color='#5C5C5C'>" + m_content + "</font>");
+    setText(title + "<br><font color='#5C5C5C'>" + content + "</font>");
 }
