@@ -4,12 +4,12 @@
 #include <QtWidgets>
 #include "note.h"
 
-class NoteDialog : public QDialog
+class NoteDialog : public QWidget
 {
     Q_OBJECT
 
     public:
-        NoteDialog(QWidget *parent = 0, Note * = 0);
+        NoteDialog(Note * = 0);
         QString content() const;
         QString title() const;
         int itemRow() const;

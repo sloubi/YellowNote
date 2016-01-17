@@ -1,6 +1,6 @@
 #include "notedialog.h"
 
-NoteDialog::NoteDialog(QWidget *parent, Note *note) : QDialog(parent)
+NoteDialog::NoteDialog(Note *note) : QWidget()
 {
     setWindowTitle(note == 0 ? "Nouvelle note" : "Modification de la note");
 
@@ -65,9 +65,9 @@ void NoteDialog::setItemRow(int row)
 void NoteDialog::okClicked()
 {
     // Emet un signal pour la création ou la modification de la note
-    // On passe un pointeur vers le QDialog pour pouvoir récupérer
+    // On passe un pointeur vers la fenêtre pour pouvoir récupérer
     // les valeurs du formulaire
     emit saved(this);
-    // Ferme le QDialog
-    accept();
+    // Ferme la fenêtre
+    close();
 }

@@ -81,7 +81,7 @@ void MainWindow::initialize()
 
 void MainWindow::openNoteDialog()
 {
-    NoteDialog *dialog = new NoteDialog(this);
+    NoteDialog *dialog = new NoteDialog();
     dialog->show();
 
     QObject::connect(dialog, SIGNAL(saved(NoteDialog*)), this, SLOT(addNoteFromDialog(NoteDialog*)));
@@ -91,7 +91,7 @@ void MainWindow::openEditNoteDialog(QListWidgetItem *item)
 {
     NoteListWidgetItem *noteItem = static_cast<NoteListWidgetItem*>(item);
 
-    NoteDialog *dialog = new NoteDialog(this, noteItem->note());
+    NoteDialog *dialog = new NoteDialog(noteItem->note());
     dialog->setItemRow(m_listWidget->row(noteItem));
     dialog->show();
 
