@@ -5,7 +5,12 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
     setWindowTitle(note == 0 ? "Nouvelle note" : "Modification de la note");
 
     m_title = new QLineEdit;
+
     m_content = new QTextEdit;
+    // Pour que la zone de texte s'étire aussi quand la fenêtre est redimensionnée
+    QSizePolicy policy = m_content->sizePolicy();
+    policy.setVerticalStretch(1);
+    m_content->setSizePolicy(policy);
 
     // Si on est en modification, on remplit les champs
     if (note != 0)
