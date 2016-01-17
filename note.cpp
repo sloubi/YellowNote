@@ -121,7 +121,7 @@ int Note::lastInsertId()
 {
     QSqlDatabase db = QSqlDatabase::database();
     QSqlQuery q(db);
-    q.exec("SELECT seq FROM sqlite_sequence WHERE name='notes'");
+    q.exec("SELECT last_insert_rowid()");
     q.next();
     return q.value(0).toInt();
 }
