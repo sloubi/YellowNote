@@ -11,26 +11,42 @@ class Note
 {
     public:
         Note();
-        Note(const QString &title, const QString &content);
+        Note(const QString &title, const QString &content, const QString &sharedKey = "");
         QString title() const;
         QString content() const;
         int id() const;
+        QString sharedKey() const;
         void setTitle(const QString & title);
         void setContent(const QString & content);
         void setId(const int id);
+        void setSharedKey(const QString & sharedKey);
+        void setCreatedAt(const QDateTime & createdAt);
+        void setUpdatedAt(const QDateTime & updatedAt);
+        void setSyncedAt(const QDateTime & syncedAt);
         static QList<Note> readFromFile();
         static void writeToFile(const QList<Note> & notes);
         static void createNotesTableIfNotExists();
+        static QString getJsonNotesToSync();
         static QList<Note> loadFromDb();
-        void addToDb();
+        void addToDb(bool toSync = true);
         void editInDb();
-        void deleteInDb();
+        static void deleteInDb();
+        static void deleteInDb(const QString & sharedKey);
+        static void setToSyncOffInDb();
+        static bool exists(const QString & sharedKey);
+        void setDeleteInDb();
         int lastInsertId();
 
     private:
         int m_id;
         QString m_title;
         QString m_content;
+        QString m_sharedKey;
+        bool m_toSync;
+        bool m_toDelete;
+        QDateTime m_createdAt;
+        QDateTime m_updatedAt;
+        QDateTime m_syncedAt;
 };
 
 #endif // NOTE_H

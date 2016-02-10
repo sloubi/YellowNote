@@ -8,6 +8,7 @@
 
 int main(int argc, char *argv[])
 {
+    qDebug() << "start";
     bool hotkeyLoop(true);
     RegisterHotKey(NULL, 1, MOD_WIN | MOD_NOREPEAT, 0x5A); // WIN + Z
 
@@ -26,9 +27,11 @@ int main(int argc, char *argv[])
         DispatchMessage(&msg);
         if (msg.message == WM_HOTKEY)
         {
+            qDebug() << "touche 1";
             if (msg.wParam == 1)
             {
-                w.openNoteDialog();
+                qDebug() << "touche 2";
+                //w.openNoteDialog();
             }
         }
     }

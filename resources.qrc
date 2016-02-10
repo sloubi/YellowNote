@@ -1,7 +1,11 @@
 <RCC>
     <qresource prefix="/note">
         <file alias="add">note_add.png</file>
-        <file alias="delete">note_delete.png</file>
         <file alias="logo">note.png</file>
+        <file alias="sync">arrow_refresh.png</file>
+        <file alias="delete">bin_closed.png</file>
+    </qresource>
+    <qresource prefix="/config">
+        <file>oauth.ini</file>
     </qresource>
 </RCC>

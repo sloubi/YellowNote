@@ -4,6 +4,10 @@
 #include <QObject>
 #include <QtWidgets>
 #include <QtSql>
+#include <QNetworkReply>
+#include "oauth2.h"
+#include "o2/o2settingsstore.h"
+#include "o2/o2requestor.h"
 #include "notelistwidgetitem.h"
 #include "notelabel.h"
 #include "notedialog.h"
@@ -30,11 +34,15 @@ public slots:
     void close();
     void deleteNote();
     void about();
+    void sync();
+    void test(int id, QNetworkReply::NetworkError error, QByteArray data);
 
 private:
     QListWidget *m_listWidget;
+    QMap<QString, int> m_sharedkeyRows;
+    Oauth2 *m_oauth2;
     bool *m_hotkeyLoop;
-
+    QSettings *m_o2InternalSettings;
 };
 
 #endif // MAINWINDOW_H
