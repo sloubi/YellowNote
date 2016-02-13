@@ -2,11 +2,12 @@
 
 NoteDialog::NoteDialog(Note *note) : QWidget()
 {
-    setWindowTitle(note == 0 ? "Nouvelle note" : "Modification de la note");
+    setWindowTitle(note == 0 ? "Nouvelle note" : note->title());
 
     m_title = new QLineEdit;
 
     m_content = new QTextEdit;
+
     // Pour que la zone de texte s'étire aussi quand la fenêtre est redimensionnée
     QSizePolicy policy = m_content->sizePolicy();
     policy.setVerticalStretch(1);
