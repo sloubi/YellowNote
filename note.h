@@ -1,6 +1,7 @@
 #ifndef NOTE_H
 #define NOTE_H
 
+#include "sqlutils.h"
 #include <QString>
 #include <QFile>
 #include <QList>
@@ -20,9 +21,9 @@ class Note
         void setContent(const QString & content);
         void setId(const int id);
         void setSharedKey(const QString & sharedKey);
-        void setCreatedAt(const QDateTime & createdAt);
-        void setUpdatedAt(const QDateTime & updatedAt);
-        void setSyncedAt(const QDateTime & syncedAt);
+        void setCreatedAt(const QString &createdAt);
+        void setUpdatedAt(const QString & updatedAt);
+        void setSyncedAt(const QString &syncedAt);
         static QList<Note> readFromFile();
         static void writeToFile(const QList<Note> & notes);
         static void createNotesTableIfNotExists();

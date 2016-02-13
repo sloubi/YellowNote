@@ -328,6 +328,8 @@ void MainWindow::test(int id, QNetworkReply::NetworkError error, QByteArray data
                             obj["content"].toString(),
                             obj["shared_key"].toString()
                         );
+                        note->setCreatedAt(obj["created_at"].toString());
+                        note->setUpdatedAt(obj["updated_at"].toString());
                         addNoteLabel(note);
                         note->addToDb(false);
                     }

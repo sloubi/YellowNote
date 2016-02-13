@@ -16,7 +16,8 @@ SOURCES += \
     o2/o2settingsstore.cpp \
     o2/simplecrypt.cpp \
     oauth2.cpp \
-    connexiondialog.cpp
+    connexiondialog.cpp \
+    sqlutils.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -33,7 +34,8 @@ HEADERS += \
     o2/o2settingsstore.h \
     o2/simplecrypt.h \
     oauth2.h \
-    connexiondialog.h
+    connexiondialog.h \
+    sqlutils.h
 
 RC_FILE = app.rc
 

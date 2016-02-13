@@ -65,19 +65,19 @@ void Note::setSharedKey(const QString & sharedKey)
     m_sharedKey = sharedKey;
 }
 
-void Note::setCreatedAt(const QDateTime & createdAt)
+void Note::setCreatedAt(const QString & createdAt)
 {
-    m_createdAt = createdAt;
+    m_createdAt = SqlUtils::date(createdAt);
 }
 
-void Note::setUpdatedAt(const QDateTime & updatedAt)
+void Note::setUpdatedAt(const QString & updatedAt)
 {
-    m_updatedAt = updatedAt;
+    m_updatedAt = SqlUtils::date(updatedAt);
 }
 
-void Note::setSyncedAt(const QDateTime & syncedAt)
+void Note::setSyncedAt(const QString & syncedAt)
 {
-    m_syncedAt = syncedAt;
+    m_syncedAt = SqlUtils::date(syncedAt);
 }
 
 QList<Note> Note::readFromFile()
@@ -117,15 +117,15 @@ void Note::createNotesTableIfNotExists()
     QSqlDatabase db = QSqlDatabase::database();
     QSqlQuery query(db);
     query.exec("CREATE TABLE 'notes' ("
-                   "'id' INTEGER PRIMARY KEY  NOT NULL,"
+                   "'id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
                    "'shared_key' VARCHAR NOT NULL,"
                    "'title' VARCHAR NOT NULL,"
                    "'content' TEXT NOT NULL,"
                    "'to_sync' BOOL NOT NULL DEFAULT (0),"
                    "'to_delete' BOOL NOT NULL DEFAULT (0),"
-                   "'created_at' DATETIME NOT NULL  DEFAULT (CURRENT_TIMESTAMP),"
-                   "'updated_at' DATETIME NOT NULL  DEFAULT (CURRENT_TIMESTAMP),"
-                   "'synced_at' DATETIME NOT NULL  DEFAULT (CURRENT_TIMESTAMP)"
+                   "'created_at' DATETIME NOT NULL,"
+                   "'updated_at' DATETIME NOT NULL,"
+                   "'synced_at' DATETIME NULL DEFAULT (NULL)"
                ")");
 }
 
@@ -149,9 +149,9 @@ QList<Note> Note::loadFromDb()
         {
             Note note(query.value(2).toString(), query.value(3).toString(), query.value(1).toString());
             note.setId(query.value(0).toInt());
-            note.setCreatedAt(QDateTime::fromString(query.value(6).toString(), Qt::ISODate));
-            note.setUpdatedAt(QDateTime::fromString(query.value(7).toString(), Qt::ISODate));
-            note.setSyncedAt(QDateTime::fromString(query.value(8).toString(), Qt::ISODate));
+            note.setCreatedAt(query.value(6).toString());
+            note.setUpdatedAt(query.value(7).toString());
+            note.setSyncedAt(query.value(8).toString());
             notes.append(note);
         }
     }
@@ -167,31 +167,40 @@ void Note::addToDb(bool toSync)
 {
     QSqlDatabase db = QSqlDatabase::database();
     QSqlQuery q(db);
-    q.prepare("INSERT INTO notes('shared_key', 'title', 'content', 'to_sync') "
-              "VALUES (:shared_key, :title, :content, :to_sync)");
+    q.prepare("INSERT INTO notes('shared_key', 'title', 'content', 'to_sync', 'created_at', 'updated_at') "
+              "VALUES (:shared_key, :title, :content, :to_sync, :created_at, :updated_at)");
     q.bindValue(":shared_key", m_sharedKey);
     q.bindValue(":title", m_title);
     q.bindValue(":content", m_content);
     q.bindValue(":to_sync", toSync);
-    q.exec();
 
-    m_id = lastInsertId();
+    // Si on est en train de créer une note suite à une synchronisation
+    if ( ! toSync)
+    {
+        q.bindValue(":created_at", SqlUtils::date(m_createdAt));
+        q.bindValue(":updated_at", SqlUtils::date(m_updatedAt));
+    }
+    else
+    {
+        q.bindValue(":created_at", SqlUtils::getNow());
+        q.bindValue(":updated_at", SqlUtils::getNow());
+    }
+
+    if (!q.exec())
+    {
+        qDebug() << "sql error : " << q.lastError();
+    }
+
+    m_id = SqlUtils::lastInsertId();
 }
 
-int Note::lastInsertId()
-{
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery q(db);
-    q.exec("SELECT last_insert_rowid()");
-    q.next();
-    return q.value(0).toInt();
-}
+
 
 void Note::editInDb()
 {
     QSqlDatabase db = QSqlDatabase::database();
     QSqlQuery q(db);
-    q.prepare("UPDATE notes SET title = :title, content = :content, to_sync = 1 WHERE id = :id");
+    q.prepare("UPDATE notes SET title = :title, content = :content, to_sync = 1, updated_at = datetime('now', 'localtime') WHERE id = :id");
     q.bindValue(":title", m_title);
     q.bindValue(":content", m_content);
     q.bindValue(":id", m_id);
@@ -228,7 +237,7 @@ void Note::setToSyncOffInDb()
 {
     QSqlDatabase db = QSqlDatabase::database();
     QSqlQuery q(db);
-    q.prepare("UPDATE notes SET to_sync = 0");
+    q.prepare("UPDATE notes SET to_sync = 0, synced_at = datetime('now', 'localtime') WHERE to_sync = 1");
     q.exec();
 }
 
