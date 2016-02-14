@@ -12,13 +12,14 @@
 #include "notelabel.h"
 #include "notedialog.h"
 #include "note.h"
+#include "hotkeythread.h"
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(bool *hotkeyLoop);
+    MainWindow();
 
 protected:
     void createMenus();
@@ -37,13 +38,14 @@ public slots:
     void about();
     void sync();
     void onSyncRequestFinished(int id, QNetworkReply::NetworkError error, QByteArray data);
+    void handleHotKeyEvent(int modifier, int key);
 
 private:
     QListWidget *m_listWidget;
     QMap<QString, int> m_sharedkeyRows;
     Oauth2 *m_oauth2;
-    bool *m_hotkeyLoop;
     QSettings *m_o2InternalSettings;
+    HotKeyThread *m_hotKeyThread;
 };
 
 #endif // MAINWINDOW_H

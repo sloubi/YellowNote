@@ -6,7 +6,7 @@
 #include "mainwindow.h"
 #include "connexiondialog.h"
 
-MainWindow::MainWindow(bool *hotkeyLoop) : QMainWindow()
+MainWindow::MainWindow() : QMainWindow()
 {
     setWindowTitle("YellowNote");
 
@@ -24,7 +24,6 @@ MainWindow::MainWindow(bool *hotkeyLoop) : QMainWindow()
     createMenus();
 
     initialize();
-    m_hotkeyLoop = hotkeyLoop;
 }
 
 void MainWindow::createMenus()
@@ -72,6 +71,14 @@ void MainWindow::createMenus()
 
 void MainWindow::initialize()
 {
+    // Thread des raccourcis clavier globaux
+    m_hotKeyThread = new HotKeyThread(this);
+
+    QObject::connect(m_hotKeyThread, SIGNAL(hotKeyEvent(int, int)),
+        this, SLOT(handleHotKeyEvent(int, int)), Qt::QueuedConnection);
+
+    m_hotKeyThread->start();
+
     // Initialise la connexion à la base de données
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName("notes.db");
@@ -188,8 +195,8 @@ void MainWindow::editNoteFromDialog(NoteDialog *noteDialog)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    // On sort de la boucle infinie des raccourcis globaux
-    *m_hotkeyLoop = false;
+    // On ferme le thread des raccourcis clavier
+    m_hotKeyThread->stop();
 
     // On laisse la fenêtre se fermer
     event->accept();
@@ -197,8 +204,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::close()
 {
-    // On sort de la boucle infinie des raccourcis globaux
-    *m_hotkeyLoop = false;
+    // On ferme le thread des raccourcis clavier
+    m_hotKeyThread->stop();
+
     qApp->quit();
 }
 
@@ -370,4 +378,10 @@ void MainWindow::onSyncRequestFinished(int id, QNetworkReply::NetworkError error
             return;
         }
     }
+}
+
+void MainWindow::handleHotKeyEvent(int modifier, int key)
+{
+    if (modifier == MOD_WIN && key == KEY_Z)
+        openNoteDialog();
 }
