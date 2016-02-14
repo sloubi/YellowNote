@@ -50,6 +50,9 @@ void MainWindow::createMenus()
     actionSync->setShortcut(QKeySequence("Ctrl+S"));
     connect(actionSync, SIGNAL(triggered()), this, SLOT(sync()));
 
+    QAction *actionCheckUpdates = new QAction("&Vérifier les mises à jour", this);
+    connect(actionCheckUpdates, SIGNAL(triggered()), this, SLOT(checkUpdates()));
+
     QAction *actionAbout = new QAction("&À propos de YellowNote", this);
     connect(actionAbout, SIGNAL(triggered()), this, SLOT(about()));
 
@@ -60,6 +63,7 @@ void MainWindow::createMenus()
     menuNotes->addAction(actionQuit);
 
     QMenu *menuHelp = menuBar()->addMenu("&Aide");
+    menuHelp->addAction(actionCheckUpdates);
     menuHelp->addAction(actionAbout);
 
     QToolBar *toolBar = addToolBar("Toolbar");
@@ -384,4 +388,29 @@ void MainWindow::handleHotKeyEvent(int modifier, int key)
 {
     if (modifier == MOD_WIN && key == KEY_Z)
         openNoteDialog();
+}
+
+void MainWindow::checkUpdates()
+{
+    QNetworkAccessManager manager;
+    QNetworkReply *reply = manager.get(QNetworkRequest(QUrl("http://yellownote.sloubi.eu/version.txt")));
+
+    QEventLoop loop;
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QString lastVersion = reply->readAll();
+
+    if (QString(YELLOWNOTE_VERSION) != lastVersion)
+    {
+        QMessageBox::information(this,"Vérification des mises à jour",
+            "Une nouvelle version de YellowNote est disponible ! La version <b>" + lastVersion + "</b> "
+            "est disponible sur <a href='http://yellownote.sloubi.eu'>yellownote.sloubi.eu</a>.<br><br>"
+            "Vous pouvez télécharger cette version en utilisant le lien suivant :<br>"
+            "<a href='https://github.com/sloubi/YellowNote-Qt/releases'>https://github.com/sloubi/YellowNote-Qt/releases</a>");
+    }
+    else
+    {
+        QMessageBox::information(this,"Vérification des mises à jour", "Vous avez déjà la dernière version de YellowNote.");
+    }
 }

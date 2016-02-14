@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#define YELLOWNOTE_VERSION "0.1"
+
 #include <QObject>
 #include <QtWidgets>
 #include <QtSql>
@@ -39,6 +41,7 @@ public slots:
     void sync();
     void onSyncRequestFinished(int id, QNetworkReply::NetworkError error, QByteArray data);
     void handleHotKeyEvent(int modifier, int key);
+    void checkUpdates();
 
 private:
     QListWidget *m_listWidget;
