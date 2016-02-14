@@ -274,7 +274,7 @@ void MainWindow::sync()
         requestor->post(request, params.toString(QUrl::FullyEncoded).toUtf8());
 
         QObject::connect(requestor, SIGNAL(finished(int, QNetworkReply::NetworkError, QByteArray)),
-                         this, SLOT(test(int, QNetworkReply::NetworkError, QByteArray)));
+                         this, SLOT(onSyncRequestFinished(int, QNetworkReply::NetworkError, QByteArray)));
     }
     else
     {
@@ -284,7 +284,7 @@ void MainWindow::sync()
     }
 }
 
-void MainWindow::test(int id, QNetworkReply::NetworkError error, QByteArray data)
+void MainWindow::onSyncRequestFinished(int id, QNetworkReply::NetworkError error, QByteArray data)
 {
     if (error == QNetworkReply::AuthenticationRequiredError)
     {

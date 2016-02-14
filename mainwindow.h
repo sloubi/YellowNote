@@ -36,7 +36,7 @@ public slots:
     void deleteNote();
     void about();
     void sync();
-    void test(int id, QNetworkReply::NetworkError error, QByteArray data);
+    void onSyncRequestFinished(int id, QNetworkReply::NetworkError error, QByteArray data);
 
 private:
     QListWidget *m_listWidget;
