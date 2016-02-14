@@ -8,6 +8,11 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
 
     m_content = new QTextEdit;
 
+    // Par défaut, la note n'est rattaché à aucune NoteListWidgetItem
+    m_itemRow = -1;
+
+    m_changed = false;
+
     // Pour que la zone de texte s'étire aussi quand la fenêtre est redimensionnée
     QSizePolicy policy = m_content->sizePolicy();
     policy.setVerticalStretch(1);
@@ -20,16 +25,14 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
         setContent(note->content());
     }
 
-    QPushButton *ok = new QPushButton(note == 0 ? "Ajouter la note" : "Enregistrer");
-
     QFormLayout *layout = new QFormLayout;
     layout->addRow("Titre", m_title);
     layout->addRow("Note", m_content);
-    layout->addWidget(ok);
-
-    QObject::connect(ok, SIGNAL(clicked()), this, SLOT(okClicked()));
 
     setLayout(layout);
+
+    connect(m_title, SIGNAL(textChanged(QString)), this, SLOT(handleChanging(QString)));
+    connect(m_content, SIGNAL(textChanged()), this, SLOT(handleChanging()));
 
     // Donne le focus à la fenêtre (quand elle est créée
     // depuis un raccouri clavier global)
@@ -68,12 +71,36 @@ void NoteDialog::setItemRow(int row)
     m_itemRow = row;
 }
 
-void NoteDialog::okClicked()
+void NoteDialog::handleChanging(const QString & text)
 {
-    // Emet un signal pour la création ou la modification de la note
-    // On passe un pointeur vers la fenêtre pour pouvoir récupérer
-    // les valeurs du formulaire
-    emit saved(this);
-    // Ferme la fenêtre
-    close();
+    m_changed = true;
+}
+
+void NoteDialog::changeEvent(QEvent *event)
+{
+    QWidget::changeEvent(event);
+
+    // Perte du focus
+    // (cette méthode fonctionne mieux que de surcharger focusOutEvent)
+    if (event->type() == QEvent::ActivationChange && ! this->isActiveWindow())
+    {
+        save();
+        m_changed = false;
+    }
+}
+
+void NoteDialog::closeEvent(QCloseEvent *event)
+{
+    save();
+    event->accept();
+}
+
+void NoteDialog::save()
+{
+    if (m_changed)
+    {
+        qDebug() << "save";
+        emit saved(this);
+        m_changed = false;
+    }
 }

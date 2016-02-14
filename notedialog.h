@@ -17,11 +17,16 @@ class NoteDialog : public QWidget
         void setTitle(const QString & content);
         void setItemRow(int row);
 
+    protected:
+        void changeEvent(QEvent *event);
+        void closeEvent(QCloseEvent *event);
+        void save();
+
     signals:
         void saved(NoteDialog *);
 
-    private slots:
-        void okClicked();
+    protected slots:
+        void handleChanging(const QString & text = "");
 
     private:
         QTextEdit *m_content;
@@ -29,6 +34,8 @@ class NoteDialog : public QWidget
 
         // Position du NoteListWidgetItem dans la QListWidget
         int m_itemRow;
+
+        bool m_changed;
 };
 
 #endif // NOTEDIALOG_H

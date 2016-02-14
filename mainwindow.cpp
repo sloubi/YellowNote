@@ -109,7 +109,7 @@ void MainWindow::openNoteDialog()
     NoteDialog *dialog = new NoteDialog();
     dialog->show();
 
-    QObject::connect(dialog, SIGNAL(saved(NoteDialog*)), this, SLOT(addNoteFromDialog(NoteDialog*)));
+    QObject::connect(dialog, SIGNAL(saved(NoteDialog*)), this, SLOT(saveNoteFromDialog(NoteDialog*)));
 }
 
 void MainWindow::openEditNoteDialog(QListWidgetItem *item)
@@ -120,7 +120,7 @@ void MainWindow::openEditNoteDialog(QListWidgetItem *item)
     dialog->setItemRow(m_listWidget->row(noteItem));
     dialog->show();
 
-    QObject::connect(dialog, SIGNAL(saved(NoteDialog*)), this, SLOT(editNoteFromDialog(NoteDialog*)));
+    QObject::connect(dialog, SIGNAL(saved(NoteDialog*)), this, SLOT(saveNoteFromDialog(NoteDialog*)));
 }
 
 void MainWindow::addNoteLabel(Note *note)
@@ -135,17 +135,39 @@ void MainWindow::addNoteLabel(Note *note)
     m_listWidget->setItemWidget(item, label);
 
     // Enregistrement de la position de la note dans la liste
-    m_sharedkeyRows[note->sharedKey()]  = m_listWidget->row(item);
+    m_sharedkeyRows[note->sharedKey()] = m_listWidget->row(item);
 
     // Rattachement de la note à l'item
     item->setNote(note);
 }
 
+void MainWindow::saveNoteFromDialog(NoteDialog *noteDialog)
+{
+    // Si c'est un ajout
+    if (noteDialog->itemRow() == -1)
+    {
+        addNoteFromDialog(noteDialog);
+    }
+
+    // Modification
+    else
+    {
+        editNoteFromDialog(noteDialog);
+    }
+}
+
 void MainWindow::addNoteFromDialog(NoteDialog *noteDialog)
 {
+    // On ne crée pas la note si elle n'a pas encore de contenu
+    if (noteDialog->title().isEmpty() && noteDialog->content().isEmpty())
+        return;
+
     Note *note = new Note(noteDialog->title(), noteDialog->content());
     addNoteLabel(note);
     note->addToDb();
+
+    // On rattache la NoteListWidgetItem à noteDialog
+    noteDialog->setItemRow(m_sharedkeyRows[note->sharedKey()]);
 }
 
 void MainWindow::editNoteFromDialog(NoteDialog *noteDialog)

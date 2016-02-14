@@ -25,12 +25,13 @@ protected:
     void initialize();
     void addNoteLabel(Note *note);
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
+    void addNoteFromDialog(NoteDialog *noteDialog);
+    void editNoteFromDialog(NoteDialog *noteDialog);
 
 public slots:
     void openNoteDialog();
-    void addNoteFromDialog(NoteDialog *noteDialog);
     void openEditNoteDialog(QListWidgetItem *item);
-    void editNoteFromDialog(NoteDialog *noteDialog);
+    void saveNoteFromDialog(NoteDialog *noteDialog);
     void close();
     void deleteNote();
     void about();
