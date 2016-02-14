@@ -1,6 +1,6 @@
 QT += widgets
 QT += sql
-QT += webkit
+QT += network
 
 SOURCES += \
     main.cpp \

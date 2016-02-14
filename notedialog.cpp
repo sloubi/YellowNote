@@ -5,8 +5,12 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
     setWindowTitle(note == 0 ? "Nouvelle note" : note->title());
 
     m_title = new QLineEdit;
+    m_title->setPlaceholderText("Titre");
+    m_title->setStyleSheet("border:0; border-bottom:1px solid #ddd; padding: 10px;");
 
     m_content = new QTextEdit;
+    m_content->setPlaceholderText("Commencez à taper votre note");
+    m_content->setStyleSheet("border: 0; padding: 10px;background-color: #fff;");
 
     // Par défaut, la note n'est rattaché à aucune NoteListWidgetItem
     m_itemRow = -1;
@@ -25,11 +29,31 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
         setContent(note->content());
     }
 
-    QFormLayout *layout = new QFormLayout;
-    layout->addRow("Titre", m_title);
-    layout->addRow("Note", m_content);
+    QAction *actionInfos = new QAction("&Infos", this);
+    actionInfos->setIcon(QIcon(":/note/infos"));
+    actionInfos->setIconText("Infos");
 
-    setLayout(layout);
+    QAction *actionDelete = new QAction("&Supprimer", this);
+    actionDelete->setIcon(QIcon(":/note/delete"));
+    actionDelete->setIconText("Supprimer");
+
+    QWidget *spacerWidget = new QWidget(this);
+    spacerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    spacerWidget->setVisible(true);
+
+    QToolBar *toolBar = new QToolBar;
+    toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    toolBar->addWidget(spacerWidget);
+    toolBar->addAction(actionInfos);
+    toolBar->addAction(actionDelete);
+
+    QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->setMargin(0);
+    mainLayout->setSpacing(0);
+    mainLayout->addWidget(toolBar);
+    mainLayout->addWidget(m_title);
+    mainLayout->addWidget(m_content);
+    setLayout(mainLayout);
 
     connect(m_title, SIGNAL(textChanged(QString)), this, SLOT(handleChanging(QString)));
     connect(m_content, SIGNAL(textChanged()), this, SLOT(handleChanging()));
@@ -39,6 +63,9 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
     showNormal();
     raise();
     activateWindow();
+
+    // Donne le focus sur la note elle-même
+    m_content->setFocus();
 }
 
 QString NoteDialog::content() const
