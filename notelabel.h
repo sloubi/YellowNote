@@ -10,7 +10,7 @@ class NoteLabel : public QLabel
     Q_OBJECT
 
     public:
-        NoteLabel(const QString & title, const QString & content);
+        NoteLabel(const QString & title, const QString & content, const QDateTime & updatedAt);
         NoteLabel(const Note & note);
 
     private:
@@ -18,6 +18,7 @@ class NoteLabel : public QLabel
 
         QString m_title;
         QString m_content;
+        QDateTime m_updatedAt;
 };
 
 #endif // NOTELABEL_H

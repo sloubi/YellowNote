@@ -45,6 +45,11 @@ QString Note::sharedKey() const
     return m_sharedKey;
 }
 
+QDateTime Note::updatedAt() const
+{
+    return m_updatedAt;
+}
+
 void Note::setTitle(const QString & title)
 {
     m_title = title;
@@ -139,9 +144,9 @@ QList<Note> Note::loadFromDb()
     QSqlQuery query(db);
 
     if (query.exec("SELECT id, shared_key, title, content, to_sync, to_delete, "
-                   "datetime(created_at, 'localtime') AS created_at, "
-                   "datetime(updated_at, 'localtime') AS updated_at, "
-                   "datetime(synced_at, 'localtime') AS synced_at "
+                   "datetime(created_at) AS created_at, "
+                   "datetime(updated_at) AS updated_at, "
+                   "datetime(synced_at) AS synced_at "
                    "FROM notes "
                    "WHERE to_delete = 0"))
     {
@@ -259,8 +264,8 @@ QString Note::getJsonNotesToSync()
 
     QSqlQuery query(db);
     query.exec("SELECT shared_key, title, content, to_delete, "
-                   "datetime(created_at, 'localtime') AS created_at, "
-                   "datetime(updated_at, 'localtime') AS updated_at "
+                   "datetime(created_at) AS created_at, "
+                   "datetime(updated_at) AS updated_at "
                "FROM notes "
                "WHERE to_sync = 1");
     while (query.next())

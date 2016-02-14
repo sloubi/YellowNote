@@ -126,7 +126,7 @@ void MainWindow::openEditNoteDialog(QListWidgetItem *item)
 void MainWindow::addNoteLabel(Note *note)
 {
     // Création du label
-    NoteLabel *label = new NoteLabel(note->title(), note->content());
+    NoteLabel *label = new NoteLabel(note->title(), note->content(), note->updatedAt());
 
     // Création de l'item de la liste, ajout à la liste, assignation du label
     NoteListWidgetItem *item = new NoteListWidgetItem(m_listWidget);
@@ -163,6 +163,7 @@ void MainWindow::addNoteFromDialog(NoteDialog *noteDialog)
         return;
 
     Note *note = new Note(noteDialog->title(), noteDialog->content());
+    note->setUpdatedAt(SqlUtils::date(QDateTime::currentDateTime()));
     addNoteLabel(note);
     note->addToDb();
 
@@ -172,7 +173,7 @@ void MainWindow::addNoteFromDialog(NoteDialog *noteDialog)
 
 void MainWindow::editNoteFromDialog(NoteDialog *noteDialog)
 {
-    NoteLabel *label = new NoteLabel(noteDialog->title(), noteDialog->content());
+    NoteLabel *label = new NoteLabel(noteDialog->title(), noteDialog->content(), QDateTime::currentDateTime());
 
     QListWidgetItem *item = m_listWidget->item(noteDialog->itemRow());
     NoteListWidgetItem *noteItem = static_cast<NoteListWidgetItem*>(item);
@@ -326,7 +327,11 @@ void MainWindow::test(int id, QNetworkReply::NetworkError error, QByteArray data
                         int row = m_sharedkeyRows[sharedKey];
 
                         // Création du nouveau label
-                        NoteLabel *label = new NoteLabel(obj["title"].toString(), obj["content"].toString());
+                        NoteLabel *label = new NoteLabel(
+                            obj["title"].toString(),
+                            obj["content"].toString(),
+                            SqlUtils::date(obj["updated_at"].toString())
+                        );
 
                         // Récupération de l'item
                         QListWidgetItem *item = m_listWidget->item(row);
@@ -338,6 +343,7 @@ void MainWindow::test(int id, QNetworkReply::NetworkError error, QByteArray data
                         // Modification de la note rattachée à l'item
                         noteItem->note()->setTitle(obj["title"].toString());
                         noteItem->note()->setContent(obj["content"].toString());
+                        noteItem->note()->setUpdatedAt(obj["content"].toString());
 
                         // Modification de la note en base
                         noteItem->note()->editInDb();

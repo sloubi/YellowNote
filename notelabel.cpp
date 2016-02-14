@@ -1,9 +1,10 @@
 #include "notelabel.h"
 
-NoteLabel::NoteLabel(const QString & title, const QString & content)
+NoteLabel::NoteLabel(const QString & title, const QString & content, const QDateTime &updatedAt)
 {
     m_title = title;
     m_content = content;
+    m_updatedAt = updatedAt;
 
     print();
 }
@@ -12,6 +13,7 @@ NoteLabel::NoteLabel(const Note & note)
 {
     m_title = note.title();
     m_content = note.content();
+    m_updatedAt = note.updatedAt();
 
     print();
 }
@@ -27,5 +29,7 @@ void NoteLabel::print()
         content += "...";
 
     setStyleSheet("padding: 10px;");
-    setText(title + "<br><font color='#5C5C5C'>" + content + "</font>");
+    setText("<font color='#1F1F1F' size='3'>" + title + "</font><br>"
+            "<font color='#808080'>" + m_updatedAt.toString("d MMM yyyy") + "</font> - "
+            "<font color='#545454'>" + content + "</font>");
 }

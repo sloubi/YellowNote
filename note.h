@@ -17,6 +17,7 @@ class Note
         QString content() const;
         int id() const;
         QString sharedKey() const;
+        QDateTime updatedAt() const;
         void setTitle(const QString & title);
         void setContent(const QString & content);
         void setId(const int id);
