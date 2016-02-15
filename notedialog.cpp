@@ -17,6 +17,8 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
 
     m_changed = false;
 
+    m_note = note;
+
     // Pour que la zone de texte s'étire aussi quand la fenêtre est redimensionnée
     QSizePolicy policy = m_content->sizePolicy();
     policy.setVerticalStretch(1);
@@ -32,10 +34,12 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
     QAction *actionInfos = new QAction("&Infos", this);
     actionInfos->setIcon(QIcon(":/note/infos"));
     actionInfos->setIconText("Infos");
+    connect(actionInfos, SIGNAL(triggered()), this, SLOT(infos()));
 
     QAction *actionDelete = new QAction("&Supprimer", this);
     actionDelete->setIcon(QIcon(":/note/delete"));
     actionDelete->setIconText("Supprimer");
+    connect(actionDelete, SIGNAL(triggered()), this, SLOT(deleteMe()));
 
     QWidget *spacerWidget = new QWidget(this);
     spacerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -98,6 +102,11 @@ void NoteDialog::setItemRow(int row)
     m_itemRow = row;
 }
 
+void NoteDialog::setNote(Note* note)
+{
+    m_note = note;
+}
+
 void NoteDialog::handleChanging(const QString & text)
 {
     m_changed = true;
@@ -126,8 +135,63 @@ void NoteDialog::save()
 {
     if (m_changed)
     {
-        qDebug() << "save";
         emit saved(this);
         m_changed = false;
     }
+}
+
+void NoteDialog::infos()
+{
+    if (!m_note)
+        return;
+
+    QDialog *dialog = new QDialog(this);
+    dialog->setWindowTitle("Informations sur la note");
+
+    QLabel *creation = new QLabel(m_note->createdAt().toString("d MM yyyy à hh:mm:ss"));
+    QLabel *update = new QLabel(m_note->updatedAt().toString("d MM yyyy à hh:mm:ss"));
+    QLabel *sync = new QLabel(m_note->toSync() ? "Synchronisation nécessaire" :
+        "Synchronisé le " + m_note->syncedAt().toString("d MMM yyyy à hh:mm:ss"));
+
+    QLabel *chars = new QLabel(QString::number(content().size()));
+    QLabel *words = new QLabel(QString::number(content().split(QRegExp("(\\s|\\n|\\r)+"), QString::SkipEmptyParts).count()));
+    QLabel *lines = new QLabel(QString::number(m_content->document()->lineCount()));
+
+    creation->setAlignment(Qt::AlignRight);
+    update->setAlignment(Qt::AlignRight);
+    sync->setAlignment(Qt::AlignRight);
+    chars->setAlignment(Qt::AlignRight);
+    words->setAlignment(Qt::AlignRight);
+    lines->setAlignment(Qt::AlignRight);
+
+    QFormLayout *noteLayout = new QFormLayout;
+    noteLayout->addRow("Créée le", creation);
+    noteLayout->addRow("Mise à jour le", update);
+    noteLayout->addRow("Statut", sync);
+
+    QFormLayout *textLayout = new QFormLayout;
+    textLayout->addRow("Caractères", chars);
+    textLayout->addRow("Mots", words);
+    textLayout->addRow("Lignes", lines);
+
+    QGroupBox *noteGroupBox = new QGroupBox("Note");
+    noteGroupBox->setLayout(noteLayout);
+    QGroupBox *textGroupBox = new QGroupBox("Texte");
+    textGroupBox->setLayout(textLayout);
+
+    QPushButton *close = new QPushButton("&Fermer", dialog);
+    connect(close, SIGNAL(clicked()), dialog, SLOT(accept()));
+
+    QVBoxLayout *mainLayout = new QVBoxLayout();
+    mainLayout->addWidget(noteGroupBox);
+    mainLayout->addWidget(textGroupBox);
+    mainLayout->addWidget(close, 0, Qt::AlignRight);
+
+    dialog->setLayout(mainLayout);
+    dialog->exec();
+}
+
+void NoteDialog::deleteMe()
+{
+    // signal de suppression
 }

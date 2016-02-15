@@ -3,7 +3,6 @@
 
 Note::Note()
 {
-
 }
 
 Note::Note(const QString & title, const QString & content, const QString & sharedKey)
@@ -23,6 +22,8 @@ Note::Note(const QString & title, const QString & content, const QString & share
     {
         m_sharedKey = QUuid::createUuid().toString();
     }
+
+    m_toSync = true;
 }
 
 QString Note::title() const
@@ -45,9 +46,24 @@ QString Note::sharedKey() const
     return m_sharedKey;
 }
 
+QDateTime Note::createdAt() const
+{
+    return m_createdAt;
+}
+
 QDateTime Note::updatedAt() const
 {
     return m_updatedAt;
+}
+
+QDateTime Note::syncedAt() const
+{
+    return m_syncedAt;
+}
+
+bool Note::toSync() const
+{
+    return m_toSync;
 }
 
 void Note::setTitle(const QString & title)
@@ -83,6 +99,11 @@ void Note::setUpdatedAt(const QString & updatedAt)
 void Note::setSyncedAt(const QString & syncedAt)
 {
     m_syncedAt = SqlUtils::date(syncedAt);
+}
+
+void Note::setToSync(const bool toSync)
+{
+    m_toSync = toSync;
 }
 
 QList<Note> Note::readFromFile()
@@ -157,6 +178,7 @@ QList<Note> Note::loadFromDb()
             note.setCreatedAt(query.value(6).toString());
             note.setUpdatedAt(query.value(7).toString());
             note.setSyncedAt(query.value(8).toString());
+            note.setToSync(query.value(4).toBool());
             notes.append(note);
         }
     }
@@ -168,8 +190,16 @@ QList<Note> Note::loadFromDb()
     return notes;
 }
 
-void Note::addToDb(bool toSync)
+void Note::addToDb()
 {
+    // Si la note est à synchroniser
+    if (m_toSync)
+    {
+        // On met les dates de création/modification à maintenant
+        m_createdAt = QDateTime::currentDateTime();
+        m_updatedAt = QDateTime::currentDateTime();
+    }
+
     QSqlDatabase db = QSqlDatabase::database();
     QSqlQuery q(db);
     q.prepare("INSERT INTO notes('shared_key', 'title', 'content', 'to_sync', 'created_at', 'updated_at') "
@@ -177,19 +207,9 @@ void Note::addToDb(bool toSync)
     q.bindValue(":shared_key", m_sharedKey);
     q.bindValue(":title", m_title);
     q.bindValue(":content", m_content);
-    q.bindValue(":to_sync", toSync);
-
-    // Si on est en train de créer une note suite à une synchronisation
-    if ( ! toSync)
-    {
-        q.bindValue(":created_at", SqlUtils::date(m_createdAt));
-        q.bindValue(":updated_at", SqlUtils::date(m_updatedAt));
-    }
-    else
-    {
-        q.bindValue(":created_at", SqlUtils::getNow());
-        q.bindValue(":updated_at", SqlUtils::getNow());
-    }
+    q.bindValue(":to_sync", m_toSync);
+    q.bindValue(":created_at", SqlUtils::date(m_createdAt));
+    q.bindValue(":updated_at", SqlUtils::date(m_updatedAt));
 
     if (!q.exec())
     {

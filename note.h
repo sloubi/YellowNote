@@ -17,7 +17,10 @@ class Note
         QString content() const;
         int id() const;
         QString sharedKey() const;
+        QDateTime createdAt() const;
         QDateTime updatedAt() const;
+        QDateTime syncedAt() const;
+        bool toSync() const;
         void setTitle(const QString & title);
         void setContent(const QString & content);
         void setId(const int id);
@@ -25,12 +28,13 @@ class Note
         void setCreatedAt(const QString &createdAt);
         void setUpdatedAt(const QString & updatedAt);
         void setSyncedAt(const QString &syncedAt);
+        void setToSync(const bool toSync);
         static QList<Note> readFromFile();
         static void writeToFile(const QList<Note> & notes);
         static void createNotesTableIfNotExists();
         static QString getJsonNotesToSync();
         static QList<Note> loadFromDb();
-        void addToDb(bool toSync = true);
+        void addToDb();
         void editInDb();
         static void deleteInDb();
         static void deleteInDb(const QString & sharedKey);

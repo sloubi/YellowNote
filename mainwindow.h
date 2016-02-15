@@ -28,7 +28,7 @@ protected:
     void initialize();
     void addNoteLabel(Note *note);
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
-    void addNoteFromDialog(NoteDialog *noteDialog);
+    Note* addNoteFromDialog(NoteDialog *noteDialog);
     void editNoteFromDialog(NoteDialog *noteDialog);
 
 public slots:

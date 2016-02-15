@@ -16,6 +16,7 @@ class NoteDialog : public QWidget
         void setContent(const QString & content);
         void setTitle(const QString & content);
         void setItemRow(int row);
+        void setNote(Note* note);
 
     protected:
         void changeEvent(QEvent *event);
@@ -27,6 +28,8 @@ class NoteDialog : public QWidget
 
     protected slots:
         void handleChanging(const QString & text = "");
+        void infos();
+        void deleteMe();
 
     private:
         QTextEdit *m_content;
@@ -35,7 +38,10 @@ class NoteDialog : public QWidget
         // Position du NoteListWidgetItem dans la QListWidget
         int m_itemRow;
 
+        // La note a-t-elle subit un changement depuis le dernier enregistrement
         bool m_changed;
+
+        Note *m_note;
 };
 
 #endif // NOTEDIALOG_H

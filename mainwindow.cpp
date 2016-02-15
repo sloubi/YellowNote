@@ -157,7 +157,9 @@ void MainWindow::saveNoteFromDialog(NoteDialog *noteDialog)
     // Si c'est un ajout
     if (noteDialog->itemRow() == -1)
     {
-        addNoteFromDialog(noteDialog);
+        Note *note = addNoteFromDialog(noteDialog);
+        // Maintenant que la note est créée, on peut l'assigner au dialog
+        noteDialog->setNote(note);
     }
 
     // Modification
@@ -167,19 +169,20 @@ void MainWindow::saveNoteFromDialog(NoteDialog *noteDialog)
     }
 }
 
-void MainWindow::addNoteFromDialog(NoteDialog *noteDialog)
+Note* MainWindow::addNoteFromDialog(NoteDialog *noteDialog)
 {
     // On ne crée pas la note si elle n'a pas encore de contenu
     if (noteDialog->title().isEmpty() && noteDialog->content().isEmpty())
-        return;
+        return 0;
 
     Note *note = new Note(noteDialog->title(), noteDialog->content());
-    note->setUpdatedAt(SqlUtils::date(QDateTime::currentDateTime()));
-    addNoteLabel(note);
     note->addToDb();
+    addNoteLabel(note);
 
     // On rattache la NoteListWidgetItem à noteDialog
     noteDialog->setItemRow(m_sharedkeyRows[note->sharedKey()]);
+
+    return note;
 }
 
 void MainWindow::editNoteFromDialog(NoteDialog *noteDialog)
@@ -370,8 +373,9 @@ void MainWindow::onSyncRequestFinished(int id, QNetworkReply::NetworkError error
                         );
                         note->setCreatedAt(obj["created_at"].toString());
                         note->setUpdatedAt(obj["updated_at"].toString());
+                        note->setToSync(false);
+                        note->addToDb();
                         addNoteLabel(note);
-                        note->addToDb(false);
                     }
                 }
             }
