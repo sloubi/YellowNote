@@ -148,8 +148,8 @@ void NoteDialog::infos()
     QDialog *dialog = new QDialog(this);
     dialog->setWindowTitle("Informations sur la note");
 
-    QLabel *creation = new QLabel(m_note->createdAt().toString("d MM yyyy à hh:mm:ss"));
-    QLabel *update = new QLabel(m_note->updatedAt().toString("d MM yyyy à hh:mm:ss"));
+    QLabel *creation = new QLabel(m_note->createdAt().toString("d MMM yyyy à hh:mm:ss"));
+    QLabel *update = new QLabel(m_note->updatedAt().toString("d MMM yyyy à hh:mm:ss"));
     QLabel *sync = new QLabel(m_note->toSync() ? "Synchronisation nécessaire" :
         "Synchronisé le " + m_note->syncedAt().toString("d MMM yyyy à hh:mm:ss"));
 
