@@ -244,7 +244,7 @@ void MainWindow::about()
     QDate builtDate = QLocale(QLocale::English).toDate(QString(__DATE__).simplified(), "MMM d yyyy");
 
     QString aboutString;
-    aboutString += "<b>YellowNote 0.1</b><br>";
+    aboutString += "<b>YellowNote " + QString(YELLOWNOTE_VERSION) + "</b><br>";
     aboutString += "Par Sloubi, <a href='http://sloubi.eu'>sloubi.eu</a><br><br>";
     aboutString += "<font color='#5C5C5C'>Compilé le " + builtDate.toString("dd/MM/yyyy") + " à " + QString(__TIME__) + "<br>";
     aboutString += "Qt " + QString(QT_VERSION_STR) + "<br>";
@@ -258,7 +258,7 @@ void MainWindow::about()
     layout->addWidget(image);
     layout->addWidget(text);
 
-    QPushButton *close = new QPushButton("&Fermer", this);
+    QPushButton *close = new QPushButton("&Fermer", dialog);
     connect(close, SIGNAL(clicked()), dialog, SLOT(accept()));
 
     QVBoxLayout *mainLayout = new QVBoxLayout();
@@ -266,7 +266,7 @@ void MainWindow::about()
     mainLayout->addWidget(close, 0, Qt::AlignRight);
 
     dialog->setLayout(mainLayout);
-    dialog->show();
+    dialog->exec();
 }
 
 void MainWindow::sync()
@@ -386,7 +386,7 @@ void MainWindow::onSyncRequestFinished(int id, QNetworkReply::NetworkError error
 
 void MainWindow::handleHotKeyEvent(int modifier, int key)
 {
-    if (modifier == MOD_WIN && key == KEY_Z)
+    if (modifier == MOD_WIN && (key == KEY_Z || key == KEY_N || key == KEY_Y))
         openNoteDialog();
 }
 
@@ -403,7 +403,7 @@ void MainWindow::checkUpdates()
 
     if (QString(YELLOWNOTE_VERSION) != lastVersion)
     {
-        QMessageBox::information(this,"Vérification des mises à jour",
+        QMessageBox::information(this, "Vérification des mises à jour",
             "Une nouvelle version de YellowNote est disponible ! La version <b>" + lastVersion + "</b> "
             "est disponible sur <a href='http://yellownote.sloubi.eu'>yellownote.sloubi.eu</a>.<br><br>"
             "Vous pouvez télécharger cette version en utilisant le lien suivant :<br>"
@@ -411,6 +411,6 @@ void MainWindow::checkUpdates()
     }
     else
     {
-        QMessageBox::information(this,"Vérification des mises à jour", "Vous avez déjà la dernière version de YellowNote.");
+        QMessageBox::information(this, "Vérification des mises à jour", "Vous avez déjà la dernière version de YellowNote.");
     }
 }
