@@ -10,6 +10,7 @@
 
 #define KEY_B 0x42
 #define KEY_N 0x4E
+#define KEY_Y 0x59
 #define KEY_Z 0x5A
 #define MOD_NOREPEAT 0x4000
 #define WIN32_LEAN_AND_MEAN

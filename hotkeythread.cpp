@@ -52,6 +52,12 @@ void HotKeyThread::run()
     // store a thread id so we can exit later
     m_threadId = ::GetCurrentThreadId();
 
+    if (!registerHotKey(MOD_WIN, KEY_N))
+        qDebug() << "Impossible d'assigner la raccourci clavier !";
+
+    if (!registerHotKey(MOD_WIN, KEY_Y))
+        qDebug() << "Impossible d'assigner la raccourci clavier !";
+
     if (!registerHotKey(MOD_WIN, KEY_Z))
         qDebug() << "Impossible d'assigner la raccourci clavier !";
 
