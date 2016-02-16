@@ -143,7 +143,11 @@ void NoteDialog::save()
 void NoteDialog::infos()
 {
     if (!m_note)
+    {
+        QMessageBox::information(this, "Informations sur la note",
+            "Aucune information pour l'instant.<br>La note n'est pas encore enregistrée.");
         return;
+    }
 
     QDialog *dialog = new QDialog(this, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint);
     dialog->setWindowTitle("Informations sur la note");
