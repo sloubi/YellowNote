@@ -42,7 +42,7 @@ void MainWindow::createMenus()
     actionDelete->setIcon(QIcon(":/note/delete"));
     actionDelete->setIconText("Supprimer la note");
     actionDelete->setShortcut(QKeySequence("Del"));
-    connect(actionDelete, SIGNAL(triggered()), this, SLOT(deleteNote()));
+    connect(actionDelete, SIGNAL(triggered()), this, SLOT(deleteSelectedNote()));
 
     QAction *actionSync = new QAction("&Synchroniser", this);
     actionSync->setIcon(QIcon(":/note/sync"));
@@ -120,7 +120,8 @@ void MainWindow::openNoteDialog()
     NoteDialog *dialog = new NoteDialog();
     dialog->show();
 
-    QObject::connect(dialog, SIGNAL(saved(NoteDialog*)), this, SLOT(saveNoteFromDialog(NoteDialog*)));
+    QObject::connect(dialog, SIGNAL(backupRequested(NoteDialog*)), this, SLOT(saveNoteFromDialog(NoteDialog*)));
+    QObject::connect(dialog, SIGNAL(deletionRequested(int)), this, SLOT(deleteNote(int)));
 }
 
 void MainWindow::openEditNoteDialog(QListWidgetItem *item)
@@ -131,7 +132,8 @@ void MainWindow::openEditNoteDialog(QListWidgetItem *item)
     dialog->setItemRow(m_listWidget->row(noteItem));
     dialog->show();
 
-    QObject::connect(dialog, SIGNAL(saved(NoteDialog*)), this, SLOT(saveNoteFromDialog(NoteDialog*)));
+    QObject::connect(dialog, SIGNAL(backupRequested(NoteDialog*)), this, SLOT(saveNoteFromDialog(NoteDialog*)));
+    QObject::connect(dialog, SIGNAL(deletionRequested(int)), this, SLOT(deleteNote(int)));
 }
 
 void MainWindow::addNoteLabel(Note *note)
@@ -217,12 +219,24 @@ void MainWindow::close()
     qApp->quit();
 }
 
-void MainWindow::deleteNote()
+void MainWindow::deleteSelectedNote()
 {
     QList<QListWidgetItem*> selected = m_listWidget->selectedItems();
     if ( ! selected.empty())
     {
         QListWidgetItem *item = selected.first();
+        NoteListWidgetItem *noteItem = static_cast<NoteListWidgetItem*>(item);
+        noteItem->note()->setDeleteInDb();
+
+        m_listWidget->takeItem(m_listWidget->row(item));
+    }
+}
+
+void MainWindow::deleteNote(int itemRow)
+{
+    QListWidgetItem *item = m_listWidget->item(itemRow);
+    if (item)
+    {
         NoteListWidgetItem *noteItem = static_cast<NoteListWidgetItem*>(item);
         noteItem->note()->setDeleteInDb();
 

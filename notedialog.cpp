@@ -11,6 +11,7 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
     m_content = new QTextEdit;
     m_content->setPlaceholderText("Commencez à taper votre note");
     m_content->setStyleSheet("border: 0; padding: 10px;background-color: #fff;");
+    m_content->setAcceptRichText(false);
 
     // Par défaut, la note n'est rattaché à aucune NoteListWidgetItem
     m_itemRow = -1;
@@ -135,7 +136,7 @@ void NoteDialog::save()
 {
     if (m_changed)
     {
-        emit saved(this);
+        emit backupRequested(this);
         m_changed = false;
     }
 }
@@ -198,4 +199,6 @@ void NoteDialog::infos()
 void NoteDialog::deleteMe()
 {
     // signal de suppression
+    emit deletionRequested(m_itemRow);
+    close();
 }

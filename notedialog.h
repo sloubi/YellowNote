@@ -24,7 +24,8 @@ class NoteDialog : public QWidget
         void save();
 
     signals:
-        void saved(NoteDialog *);
+        void backupRequested(NoteDialog *);
+        void deletionRequested(int);
 
     protected slots:
         void handleChanging(const QString & text = "");

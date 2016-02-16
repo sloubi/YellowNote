@@ -36,7 +36,8 @@ public slots:
     void openEditNoteDialog(QListWidgetItem *item);
     void saveNoteFromDialog(NoteDialog *noteDialog);
     void close();
-    void deleteNote();
+    void deleteSelectedNote();
+    void deleteNote(int itemRow);
     void about();
     void sync();
     void onSyncRequestFinished(int id, QNetworkReply::NetworkError error, QByteArray data);
