@@ -145,7 +145,7 @@ void NoteDialog::infos()
     if (!m_note)
         return;
 
-    QDialog *dialog = new QDialog(this);
+    QDialog *dialog = new QDialog(this, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint);
     dialog->setWindowTitle("Informations sur la note");
 
     QLabel *creation = new QLabel(m_note->createdAt().toString("d MMM yyyy à hh:mm:ss"));

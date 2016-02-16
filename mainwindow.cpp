@@ -232,7 +232,7 @@ void MainWindow::deleteNote()
 
 void MainWindow::about()
 {
-    QDialog *dialog = new QDialog(this);
+    QDialog *dialog = new QDialog(this, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint);
     dialog->setWindowTitle("À propos de YellowNote");
 
     QLabel *image = new QLabel(dialog);
