@@ -251,7 +251,8 @@ void MainWindow::about()
     aboutString += "Par Sloubi, <a href='http://sloubi.eu'>sloubi.eu</a><br><br>";
     aboutString += "<font color='#5C5C5C'>Compilé le " + builtDate.toString("dd/MM/yyyy") + " à " + QString(__TIME__) + "<br>";
     aboutString += "Qt " + QString(QT_VERSION_STR) + "<br>";
-    aboutString += "SQLite " + sqliteVersion + "</font>";
+    aboutString += "SQLite " + sqliteVersion + "<br>";
+    aboutString += "OAuth 2.0 for Qt by <a href='https://github.com/pipacs/o2'>pipacs</a></font>";
 
     QLabel *text = new QLabel(dialog);
     text->setText(aboutString);
