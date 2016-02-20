@@ -213,10 +213,10 @@ QList<Note*> Note::loadFromDb()
     return notes;
 }
 
-void Note::addToDb()
+void Note::addToDb(bool createdNow)
 {
-    // Si la note est à synchroniser
-    if (m_toSync)
+    // Si la note vient d'être créée
+    if (createdNow)
     {
         // On met les dates de création/modification à maintenant
         m_createdAt = QDateTime::currentDateTime();
@@ -242,19 +242,20 @@ void Note::addToDb()
     m_id = SqlUtils::lastInsertId();
 }
 
-
-
-void Note::editInDb(bool setUpdatedAt)
+void Note::editInDb(bool updatedNow)
 {
-    if (setUpdatedAt)
+    if (updatedNow)
         m_updatedAt = QDateTime::currentDateTime();
 
     QSqlDatabase db = QSqlDatabase::database();
     QSqlQuery q(db);
-    q.prepare("UPDATE notes SET title = :title, content = :content, to_sync = 1, updated_at = :updated_at WHERE id = :id");
+    q.prepare("UPDATE notes SET "
+              "title = :title, content = :content, to_sync = :to_sync, updated_at = :updated_at "
+              "WHERE id = :id");
     q.bindValue(":title", m_title);
     q.bindValue(":content", m_content);
-    q.bindValue(":updated_at", m_updatedAt);
+    q.bindValue(":to_sync", m_toSync);
+    q.bindValue(":updated_at", SqlUtils::date(m_updatedAt));
     q.bindValue(":id", m_id);
     q.exec();
 }
@@ -278,6 +279,14 @@ void Note::deleteInDb(const QString & sharedKey)
 
 void Note::setDeleteInDb()
 {
+    m_toDelete = true;
+    m_toSync = true;
+
+    // Si la note n'a jamais été synchronisée,
+    // on peut la supprimer totalement de la base
+    if (m_syncedAt.isNull())
+        deleteInDb(m_sharedKey);
+
     QSqlDatabase db = QSqlDatabase::database();
     QSqlQuery q(db);
     q.prepare("UPDATE notes SET to_delete = 1, to_sync = 1 WHERE id = :id");
@@ -285,11 +294,19 @@ void Note::setDeleteInDb()
     q.exec();
 }
 
-void Note::setToSyncOffInDb()
+void Note::setSyncedNow()
 {
+    m_toSync = false;
+    m_syncedAt = QDateTime::currentDateTime();
+
     QSqlDatabase db = QSqlDatabase::database();
     QSqlQuery q(db);
-    q.prepare("UPDATE notes SET to_sync = 0, synced_at = datetime('now', 'localtime') WHERE to_sync = 1");
+    q.prepare("UPDATE notes SET "
+              "to_sync = 0, "
+              "synced_at = :synced_at "
+              "WHERE id = :id");
+    q.bindValue(":synced_at", SqlUtils::date(m_syncedAt));
+    q.bindValue(":id", m_id);
     q.exec();
 }
 

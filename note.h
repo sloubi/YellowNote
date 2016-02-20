@@ -40,12 +40,12 @@ class Note
         static void createNotesTableIfNotExists();
         static QString getJsonNotesToSync();
         static QList<Note *> loadFromDb();
-        void addToDb();
-        void editInDb(bool setUpdatedAt = true);
+        void addToDb(bool createdNow = true);
+        void editInDb(bool updatedNow = true);
         static void deleteInDb();
         static void deleteInDb(const QString & sharedKey);
-        static void setToSyncOffInDb();
         static bool exists(const QString & sharedKey);
+        void setSyncedNow();
         void setDeleteInDb();
         int lastInsertId();
 

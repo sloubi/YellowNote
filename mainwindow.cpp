@@ -326,12 +326,13 @@ void MainWindow::onSyncRequestFinished(int id, QNetworkReply::NetworkError error
         // Suppression réelles des notes dans la db local
         Note::deleteInDb();
 
-        // Passage de toutes les notes en to_sync = 0 dans la db local
-        Note::setToSyncOffInDb();
+        // On indique que toutes les notes envoyées vers le serveur ont été synchronisées
         foreach (Note *note, m_notes)
         {
-            note->setToSync(false);
-            note->setSyncedAt(SqlUtils::getNow());
+            if (note->toSync())
+            {
+                note->setSyncedNow();
+            }
         }
 
         QJsonDocument d = QJsonDocument::fromJson(data);
@@ -362,6 +363,7 @@ void MainWindow::onSyncRequestFinished(int id, QNetworkReply::NetworkError error
                         note->setContent(obj["content"].toString());
                         note->setUpdatedAt(obj["updated_at"].toString());
                         note->editInDb(false);
+                        note->setSyncedNow();
 
                         // Mise à jour de l'affichage
                         note->item()->update();
@@ -376,8 +378,10 @@ void MainWindow::onSyncRequestFinished(int id, QNetworkReply::NetworkError error
                         );
                         note->setCreatedAt(obj["created_at"].toString());
                         note->setUpdatedAt(obj["updated_at"].toString());
-                        note->setToSync(false);
-                        note->addToDb();
+                        note->addToDb(false);
+                        note->setSyncedNow();
+
+                        // Mise à jour de l'affichage
                         addNoteToList(note);
                     }
                 }
