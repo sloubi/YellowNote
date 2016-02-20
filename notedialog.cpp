@@ -1,5 +1,6 @@
 #include "notedialog.h"
 #include "note.h"
+#include "mainwindow.h"
 
 NoteDialog::NoteDialog(Note *note) : QWidget()
 {
@@ -17,7 +18,8 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
     m_changed = false;
 
     m_note = note;
-    m_note->setNoteDialog(this);
+    if (m_note)
+        m_note->setNoteDialog(this);
 
     // Pour que la zone de texte s'étire aussi quand la fenêtre est redimensionnée
     QSizePolicy policy = m_content->sizePolicy();
@@ -129,7 +131,11 @@ void NoteDialog::changeEvent(QEvent *event)
 void NoteDialog::closeEvent(QCloseEvent *event)
 {
     save();
-    m_note->setNoteDialog(0);
+    if (m_note)
+    {
+        delete m_note->noteDialog();
+        m_note->setNoteDialog(0);
+    }
     event->accept();
 }
 
