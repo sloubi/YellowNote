@@ -2,7 +2,7 @@
 #define NOTEDIALOG_H
 
 #include <QtWidgets>
-#include "note.h"
+class Note;
 
 class NoteDialog : public QWidget
 {
@@ -16,6 +16,7 @@ class NoteDialog : public QWidget
         void setContent(const QString & content);
         void setTitle(const QString & content);
         void setNote(Note* note);
+        void setFocus();
 
     protected:
         void changeEvent(QEvent *event);

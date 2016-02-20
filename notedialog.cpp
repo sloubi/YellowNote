@@ -1,4 +1,5 @@
 #include "notedialog.h"
+#include "note.h"
 
 NoteDialog::NoteDialog(Note *note) : QWidget()
 {
@@ -16,6 +17,7 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
     m_changed = false;
 
     m_note = note;
+    m_note->setNoteDialog(this);
 
     // Pour que la zone de texte s'étire aussi quand la fenêtre est redimensionnée
     QSizePolicy policy = m_content->sizePolicy();
@@ -62,12 +64,17 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
 
     // Donne le focus à la fenêtre (quand elle est créée
     // depuis un raccouri clavier global)
+    setFocus();
+
+    // Donne le focus sur le champ note
+    m_content->setFocus();
+}
+
+void NoteDialog::setFocus()
+{
     showNormal();
     raise();
     activateWindow();
-
-    // Donne le focus sur la note elle-même
-    m_content->setFocus();
 }
 
 QString NoteDialog::content() const
@@ -98,6 +105,7 @@ void NoteDialog::setContent(const QString & content)
 void NoteDialog::setNote(Note* note)
 {
     m_note = note;
+    m_note->setNoteDialog(this);
 }
 
 void NoteDialog::handleChanging(const QString & text)
@@ -121,6 +129,7 @@ void NoteDialog::changeEvent(QEvent *event)
 void NoteDialog::closeEvent(QCloseEvent *event)
 {
     save();
+    m_note->setNoteDialog(0);
     event->accept();
 }
 

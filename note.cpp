@@ -26,6 +26,7 @@ Note::Note(const QString & title, const QString & content, const QString & share
 
     m_toSync = true;
     m_item = 0;
+    m_noteDialog = 0;
 }
 
 QString Note::title() const
@@ -73,6 +74,11 @@ NoteListWidgetItem* Note::item()
     return m_item;
 }
 
+NoteDialog* Note::noteDialog()
+{
+    return m_noteDialog;
+}
+
 void Note::setTitle(const QString & title)
 {
     m_title = title;
@@ -116,6 +122,11 @@ void Note::setToSync(const bool toSync)
 void Note::setItem(NoteListWidgetItem *item)
 {
     m_item = item;
+}
+
+void Note::setNoteDialog(NoteDialog *noteDialog)
+{
+    m_noteDialog = noteDialog;
 }
 
 QList<Note> Note::readFromFile()

@@ -92,7 +92,7 @@ void MainWindow::initialize()
     {
         for (int i = 0; i < notes.size(); ++i)
         {
-            addNote(notes.at(i));
+            addNoteToList(notes.at(i));
         }
     }
 
@@ -126,6 +126,13 @@ void MainWindow::openEditNoteDialog(QListWidgetItem *item)
 {
     NoteListWidgetItem *noteItem = static_cast<NoteListWidgetItem*>(item);
 
+    // On vérifie que le dialog n'est pas déjà ouvert
+    if (noteItem->note()->noteDialog() != 0)
+    {
+        noteItem->note()->noteDialog()->setFocus();
+        return;
+    }
+
     NoteDialog *dialog = new NoteDialog(noteItem->note());
     dialog->show();
 
@@ -133,7 +140,7 @@ void MainWindow::openEditNoteDialog(QListWidgetItem *item)
     QObject::connect(dialog, SIGNAL(deletionRequested(Note*)), this, SLOT(deleteNote(Note*)));
 }
 
-void MainWindow::addNote(Note *note)
+void MainWindow::addNoteToList(Note *note)
 {
     // Création du label
     NoteLabel *label = new NoteLabel(note);
@@ -175,7 +182,7 @@ Note* MainWindow::addNoteFromDialog(NoteDialog *noteDialog)
 
     Note *note = new Note(noteDialog->title(), noteDialog->content());
     note->addToDb();
-    addNote(note);
+    addNoteToList(note);
 
     // On rattache la Note au dialog
     noteDialog->setNote(note);
@@ -371,7 +378,7 @@ void MainWindow::onSyncRequestFinished(int id, QNetworkReply::NetworkError error
                         note->setUpdatedAt(obj["updated_at"].toString());
                         note->setToSync(false);
                         note->addToDb();
-                        addNote(note);
+                        addNoteToList(note);
                     }
                 }
             }

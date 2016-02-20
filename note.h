@@ -8,6 +8,7 @@
 #include <QTextStream>
 #include <QtSql>
 class NoteListWidgetItem;
+class NoteDialog;
 
 class Note
 {
@@ -23,6 +24,7 @@ class Note
         QDateTime syncedAt() const;
         bool toSync() const;
         NoteListWidgetItem* item();
+        NoteDialog* noteDialog();
         void setTitle(const QString & title);
         void setContent(const QString & content);
         void setId(const int id);
@@ -32,6 +34,7 @@ class Note
         void setSyncedAt(const QString &syncedAt);
         void setToSync(const bool toSync);
         void setItem(NoteListWidgetItem* item);
+        void setNoteDialog(NoteDialog *noteDialog);
         static QList<Note> readFromFile();
         static void writeToFile(const QList<Note> & notes);
         static void createNotesTableIfNotExists();
@@ -57,6 +60,7 @@ class Note
         QDateTime m_updatedAt;
         QDateTime m_syncedAt;
         NoteListWidgetItem *m_item;
+        NoteDialog *m_noteDialog;
 };
 
 #endif // NOTE_H

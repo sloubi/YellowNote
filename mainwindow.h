@@ -26,7 +26,7 @@ public:
 protected:
     void createMenus();
     void initialize();
-    void addNote(Note *note);
+    void addNoteToList(Note *note);
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
     Note* addNoteFromDialog(NoteDialog *noteDialog);
     void editNoteFromDialog(NoteDialog *noteDialog);
