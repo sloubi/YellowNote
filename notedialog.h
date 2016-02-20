@@ -21,6 +21,7 @@ class NoteDialog : public QWidget
     protected:
         void changeEvent(QEvent *event);
         void closeEvent(QCloseEvent *event);
+        void resizeEvent(QResizeEvent* event);
         void save();
 
     signals:
@@ -35,6 +36,7 @@ class NoteDialog : public QWidget
     private:
         QTextEdit *m_content;
         QLineEdit *m_title;
+        QSettings *m_settings;
 
         // La note a-t-elle subit un changement depuis le dernier enregistrement
         bool m_changed;

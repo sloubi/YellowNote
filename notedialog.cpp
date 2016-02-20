@@ -64,6 +64,15 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
     connect(m_title, SIGNAL(textChanged(QString)), this, SLOT(handleChanging(QString)));
     connect(m_content, SIGNAL(textChanged()), this, SLOT(handleChanging()));
 
+    // Récupération des options
+    m_settings = new QSettings("yellownote.ini", QSettings::IniFormat);
+
+    // Réassignation de la taille de la fenêtre
+    if (m_settings->contains("width") && m_settings->contains("height"))
+    {
+        resize(m_settings->value("width").toInt(), m_settings->value("height").toInt());
+    }
+
     // Donne le focus à la fenêtre (quand elle est créée
     // depuis un raccouri clavier global)
     setFocus();
@@ -137,6 +146,14 @@ void NoteDialog::closeEvent(QCloseEvent *event)
         m_note->setNoteDialog(0);
     }
     event->accept();
+}
+
+void NoteDialog::resizeEvent(QResizeEvent* event)
+{
+   QWidget::resizeEvent(event);
+
+   m_settings->setValue("width", size().width());
+   m_settings->setValue("height", size().height());
 }
 
 void NoteDialog::save()
