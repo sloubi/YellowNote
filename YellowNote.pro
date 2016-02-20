@@ -22,7 +22,6 @@ SOURCES += \
 
 HEADERS += \
     mainwindow.h \
-    notelabel.h \
     notedialog.h \
     note.h \
     notelistwidgetitem.h \

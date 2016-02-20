@@ -1,5 +1,6 @@
 #include <QDebug>
 #include "note.h"
+#include "notelistwidgetitem.h"
 
 Note::Note()
 {
@@ -24,6 +25,7 @@ Note::Note(const QString & title, const QString & content, const QString & share
     }
 
     m_toSync = true;
+    m_item = 0;
 }
 
 QString Note::title() const
@@ -66,6 +68,11 @@ bool Note::toSync() const
     return m_toSync;
 }
 
+NoteListWidgetItem* Note::item()
+{
+    return m_item;
+}
+
 void Note::setTitle(const QString & title)
 {
     m_title = title;
@@ -104,6 +111,11 @@ void Note::setSyncedAt(const QString & syncedAt)
 void Note::setToSync(const bool toSync)
 {
     m_toSync = toSync;
+}
+
+void Note::setItem(NoteListWidgetItem *item)
+{
+    m_item = item;
 }
 
 QList<Note> Note::readFromFile()
@@ -155,10 +167,10 @@ void Note::createNotesTableIfNotExists()
                ")");
 }
 
-QList<Note> Note::loadFromDb()
+QList<Note*> Note::loadFromDb()
 {
     QSqlDatabase db = QSqlDatabase::database();
-    QList<Note> notes;
+    QList<Note*> notes;
 
     createNotesTableIfNotExists();
 
@@ -173,12 +185,12 @@ QList<Note> Note::loadFromDb()
     {
         while (query.next())
         {
-            Note note(query.value(2).toString(), query.value(3).toString(), query.value(1).toString());
-            note.setId(query.value(0).toInt());
-            note.setCreatedAt(query.value(6).toString());
-            note.setUpdatedAt(query.value(7).toString());
-            note.setSyncedAt(query.value(8).toString());
-            note.setToSync(query.value(4).toBool());
+            Note *note = new Note(query.value(2).toString(), query.value(3).toString(), query.value(1).toString());
+            note->setId(query.value(0).toInt());
+            note->setCreatedAt(query.value(6).toString());
+            note->setUpdatedAt(query.value(7).toString());
+            note->setSyncedAt(query.value(8).toString());
+            note->setToSync(query.value(4).toBool());
             notes.append(note);
         }
     }
@@ -221,13 +233,17 @@ void Note::addToDb()
 
 
 
-void Note::editInDb()
+void Note::editInDb(bool setUpdatedAt)
 {
+    if (setUpdatedAt)
+        m_updatedAt = QDateTime::currentDateTime();
+
     QSqlDatabase db = QSqlDatabase::database();
     QSqlQuery q(db);
-    q.prepare("UPDATE notes SET title = :title, content = :content, to_sync = 1, updated_at = datetime('now', 'localtime') WHERE id = :id");
+    q.prepare("UPDATE notes SET title = :title, content = :content, to_sync = 1, updated_at = :updated_at WHERE id = :id");
     q.bindValue(":title", m_title);
     q.bindValue(":content", m_content);
+    q.bindValue(":updated_at", m_updatedAt);
     q.bindValue(":id", m_id);
     q.exec();
 }

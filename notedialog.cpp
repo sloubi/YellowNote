@@ -13,9 +13,6 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
     m_content->setStyleSheet("border: 0; padding: 10px;background-color: #fff;");
     m_content->setAcceptRichText(false);
 
-    // Par défaut, la note n'est rattaché à aucune NoteListWidgetItem
-    m_itemRow = -1;
-
     m_changed = false;
 
     m_note = note;
@@ -83,9 +80,9 @@ QString NoteDialog::title() const
     return m_title->text();
 }
 
-int NoteDialog::itemRow() const
+Note * NoteDialog::note()
 {
-    return m_itemRow;
+    return m_note;
 }
 
 void NoteDialog::setTitle(const QString & title)
@@ -96,11 +93,6 @@ void NoteDialog::setTitle(const QString & title)
 void NoteDialog::setContent(const QString & content)
 {
     m_content->setText(content);
-}
-
-void NoteDialog::setItemRow(int row)
-{
-    m_itemRow = row;
 }
 
 void NoteDialog::setNote(Note* note)
@@ -199,6 +191,6 @@ void NoteDialog::infos()
 void NoteDialog::deleteMe()
 {
     // signal de suppression
-    emit deletionRequested(m_itemRow);
+    emit deletionRequested(m_note);
     close();
 }

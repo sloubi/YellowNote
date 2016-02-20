@@ -87,14 +87,12 @@ void MainWindow::initialize()
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName("notes.db");
 
-    QList<Note> notes = Note::loadFromDb();
+    QList<Note*> notes = Note::loadFromDb();
     if ( ! notes.empty())
     {
         for (int i = 0; i < notes.size(); ++i)
         {
-            Note *note = new Note();
-            *note = notes.at(i);
-            addNoteLabel(note);
+            addNote(notes.at(i));
         }
     }
 
@@ -121,7 +119,7 @@ void MainWindow::openNoteDialog()
     dialog->show();
 
     QObject::connect(dialog, SIGNAL(backupRequested(NoteDialog*)), this, SLOT(saveNoteFromDialog(NoteDialog*)));
-    QObject::connect(dialog, SIGNAL(deletionRequested(int)), this, SLOT(deleteNote(int)));
+    QObject::connect(dialog, SIGNAL(deletionRequested(Note*)), this, SLOT(deleteNote(Note*)));
 }
 
 void MainWindow::openEditNoteDialog(QListWidgetItem *item)
@@ -129,17 +127,16 @@ void MainWindow::openEditNoteDialog(QListWidgetItem *item)
     NoteListWidgetItem *noteItem = static_cast<NoteListWidgetItem*>(item);
 
     NoteDialog *dialog = new NoteDialog(noteItem->note());
-    dialog->setItemRow(m_listWidget->row(noteItem));
     dialog->show();
 
     QObject::connect(dialog, SIGNAL(backupRequested(NoteDialog*)), this, SLOT(saveNoteFromDialog(NoteDialog*)));
-    QObject::connect(dialog, SIGNAL(deletionRequested(int)), this, SLOT(deleteNote(int)));
+    QObject::connect(dialog, SIGNAL(deletionRequested(Note*)), this, SLOT(deleteNote(Note*)));
 }
 
-void MainWindow::addNoteLabel(Note *note)
+void MainWindow::addNote(Note *note)
 {
     // Création du label
-    NoteLabel *label = new NoteLabel(note->title(), note->content(), note->updatedAt());
+    NoteLabel *label = new NoteLabel(note);
 
     // Création de l'item de la liste, ajout à la liste, assignation du label
     NoteListWidgetItem *item = new NoteListWidgetItem(m_listWidget);
@@ -147,21 +144,20 @@ void MainWindow::addNoteLabel(Note *note)
     m_listWidget->addItem(item);
     m_listWidget->setItemWidget(item, label);
 
-    // Enregistrement de la position de la note dans la liste
-    m_sharedkeyRows[note->sharedKey()] = m_listWidget->row(item);
+    // Enregistrement de la note dans notre tableau principal
+    m_notes[note->sharedKey()] = note;
 
-    // Rattachement de la note à l'item
+    // Rattachement de la note à l'item et inversement
     item->setNote(note);
+    note->setItem(item);
 }
 
 void MainWindow::saveNoteFromDialog(NoteDialog *noteDialog)
 {
     // Si c'est un ajout
-    if (noteDialog->itemRow() == -1)
+    if (noteDialog->note() == 0)
     {
-        Note *note = addNoteFromDialog(noteDialog);
-        // Maintenant que la note est créée, on peut l'assigner au dialog
-        noteDialog->setNote(note);
+       addNoteFromDialog(noteDialog);
     }
 
     // Modification
@@ -179,27 +175,21 @@ Note* MainWindow::addNoteFromDialog(NoteDialog *noteDialog)
 
     Note *note = new Note(noteDialog->title(), noteDialog->content());
     note->addToDb();
-    addNoteLabel(note);
+    addNote(note);
 
-    // On rattache la NoteListWidgetItem à noteDialog
-    noteDialog->setItemRow(m_sharedkeyRows[note->sharedKey()]);
+    // On rattache la Note au dialog
+    noteDialog->setNote(note);
 
     return note;
 }
 
 void MainWindow::editNoteFromDialog(NoteDialog *noteDialog)
 {
-    NoteLabel *label = new NoteLabel(noteDialog->title(), noteDialog->content(), QDateTime::currentDateTime());
+    noteDialog->note()->setTitle(noteDialog->title());
+    noteDialog->note()->setContent(noteDialog->content());
+    noteDialog->note()->editInDb();
 
-    QListWidgetItem *item = m_listWidget->item(noteDialog->itemRow());
-    NoteListWidgetItem *noteItem = static_cast<NoteListWidgetItem*>(item);
-    noteItem->setSizeHint(label->minimumSizeHint());
-    m_listWidget->setItemWidget(item, label);
-
-    noteItem->note()->setTitle(noteDialog->title());
-    noteItem->note()->setContent(noteDialog->content());
-
-    noteItem->note()->editInDb();
+    noteDialog->note()->item()->update();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -226,21 +216,20 @@ void MainWindow::deleteSelectedNote()
     {
         QListWidgetItem *item = selected.first();
         NoteListWidgetItem *noteItem = static_cast<NoteListWidgetItem*>(item);
-        noteItem->note()->setDeleteInDb();
 
+        noteItem->note()->setDeleteInDb();
+        m_notes.remove(noteItem->note()->sharedKey());
         m_listWidget->takeItem(m_listWidget->row(item));
     }
 }
 
-void MainWindow::deleteNote(int itemRow)
+void MainWindow::deleteNote(Note *note)
 {
-    QListWidgetItem *item = m_listWidget->item(itemRow);
-    if (item)
+    if (note)
     {
-        NoteListWidgetItem *noteItem = static_cast<NoteListWidgetItem*>(item);
-        noteItem->note()->setDeleteInDb();
-
-        m_listWidget->takeItem(m_listWidget->row(item));
+        note->setDeleteInDb();
+        m_notes.remove(note->sharedKey());
+        m_listWidget->takeItem(m_listWidget->row(note->item()));
     }
 }
 
@@ -332,6 +321,11 @@ void MainWindow::onSyncRequestFinished(int id, QNetworkReply::NetworkError error
 
         // Passage de toutes les notes en to_sync = 0 dans la db local
         Note::setToSyncOffInDb();
+        foreach (Note *note, m_notes)
+        {
+            note->setToSync(false);
+            note->setSyncedAt(SqlUtils::getNow());
+        }
 
         QJsonDocument d = QJsonDocument::fromJson(data);
         if (d.isArray())
@@ -353,30 +347,17 @@ void MainWindow::onSyncRequestFinished(int id, QNetworkReply::NetworkError error
                     // Modification d'une note déjà existante
                     if (Note::exists(sharedKey))
                     {
-                        // Récupération de la position de la note dans la listWidget
-                        int row = m_sharedkeyRows[sharedKey];
+                        // Récupération de la note dans la liste
+                        Note *note = m_notes[sharedKey];
 
-                        // Création du nouveau label
-                        NoteLabel *label = new NoteLabel(
-                            obj["title"].toString(),
-                            obj["content"].toString(),
-                            SqlUtils::date(obj["updated_at"].toString())
-                        );
+                        // Assignation des nouvelles valeurs, MAJ en base
+                        note->setTitle(obj["title"].toString());
+                        note->setContent(obj["content"].toString());
+                        note->setUpdatedAt(obj["updated_at"].toString());
+                        note->editInDb(false);
 
-                        // Récupération de l'item
-                        QListWidgetItem *item = m_listWidget->item(row);
-                        NoteListWidgetItem *noteItem = static_cast<NoteListWidgetItem*>(item);
-                        noteItem->setSizeHint(label->minimumSizeHint());
-                        // Assignation du nouveau label
-                        m_listWidget->setItemWidget(item, label);
-
-                        // Modification de la note rattachée à l'item
-                        noteItem->note()->setTitle(obj["title"].toString());
-                        noteItem->note()->setContent(obj["content"].toString());
-                        noteItem->note()->setUpdatedAt(obj["content"].toString());
-
-                        // Modification de la note en base
-                        noteItem->note()->editInDb();
+                        // Mise à jour de l'affichage
+                        note->item()->update();
                     }
                     // Nouvelle note
                     else
@@ -390,7 +371,7 @@ void MainWindow::onSyncRequestFinished(int id, QNetworkReply::NetworkError error
                         note->setUpdatedAt(obj["updated_at"].toString());
                         note->setToSync(false);
                         note->addToDb();
-                        addNoteLabel(note);
+                        addNote(note);
                     }
                 }
             }

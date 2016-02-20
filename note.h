@@ -7,6 +7,7 @@
 #include <QList>
 #include <QTextStream>
 #include <QtSql>
+class NoteListWidgetItem;
 
 class Note
 {
@@ -21,6 +22,7 @@ class Note
         QDateTime updatedAt() const;
         QDateTime syncedAt() const;
         bool toSync() const;
+        NoteListWidgetItem* item();
         void setTitle(const QString & title);
         void setContent(const QString & content);
         void setId(const int id);
@@ -29,13 +31,14 @@ class Note
         void setUpdatedAt(const QString & updatedAt);
         void setSyncedAt(const QString &syncedAt);
         void setToSync(const bool toSync);
+        void setItem(NoteListWidgetItem* item);
         static QList<Note> readFromFile();
         static void writeToFile(const QList<Note> & notes);
         static void createNotesTableIfNotExists();
         static QString getJsonNotesToSync();
-        static QList<Note> loadFromDb();
+        static QList<Note *> loadFromDb();
         void addToDb();
-        void editInDb();
+        void editInDb(bool setUpdatedAt = true);
         static void deleteInDb();
         static void deleteInDb(const QString & sharedKey);
         static void setToSyncOffInDb();
@@ -53,6 +56,7 @@ class Note
         QDateTime m_createdAt;
         QDateTime m_updatedAt;
         QDateTime m_syncedAt;
+        NoteListWidgetItem *m_item;
 };
 
 #endif // NOTE_H

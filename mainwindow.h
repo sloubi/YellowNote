@@ -26,7 +26,7 @@ public:
 protected:
     void createMenus();
     void initialize();
-    void addNoteLabel(Note *note);
+    void addNote(Note *note);
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
     Note* addNoteFromDialog(NoteDialog *noteDialog);
     void editNoteFromDialog(NoteDialog *noteDialog);
@@ -37,7 +37,7 @@ public slots:
     void saveNoteFromDialog(NoteDialog *noteDialog);
     void close();
     void deleteSelectedNote();
-    void deleteNote(int itemRow);
+    void deleteNote(Note *note);
     void about();
     void sync();
     void onSyncRequestFinished(int id, QNetworkReply::NetworkError error, QByteArray data);
@@ -46,7 +46,7 @@ public slots:
 
 private:
     QListWidget *m_listWidget;
-    QMap<QString, int> m_sharedkeyRows;
+    QMap<QString, Note*> m_notes;
     Oauth2 *m_oauth2;
     QSettings *m_o2InternalSettings;
     HotKeyThread *m_hotKeyThread;

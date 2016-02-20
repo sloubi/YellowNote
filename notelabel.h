@@ -1,24 +1,18 @@
 #ifndef NOTELABEL_H
 #define NOTELABEL_H
 
-#include <QtWidgets>
+#include <QLabel>
 #include <QString>
 #include "note.h"
 
 class NoteLabel : public QLabel
 {
-    Q_OBJECT
-
     public:
-        NoteLabel(const QString & title, const QString & content, const QDateTime & updatedAt);
-        NoteLabel(const Note & note);
+        NoteLabel(Note *note);
+        void update();
 
     private:
-        void print();
-
-        QString m_title;
-        QString m_content;
-        QDateTime m_updatedAt;
+        Note *m_note;
 };
 
 #endif // NOTELABEL_H
