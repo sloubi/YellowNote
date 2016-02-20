@@ -144,6 +144,7 @@ void NoteDialog::save()
     if (m_changed)
     {
         emit backupRequested(this);
+        setWindowTitle(m_note->title());
         m_changed = false;
     }
 }
