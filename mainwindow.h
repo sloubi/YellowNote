@@ -43,6 +43,7 @@ public slots:
     void onSyncRequestFinished(int id, QNetworkReply::NetworkError error, QByteArray data);
     void handleHotKeyEvent(int modifier, int key);
     void checkUpdates();
+    void onRefreshTokenFinished(QNetworkReply::NetworkError error);
 
 private:
     QListWidget *m_listWidget;

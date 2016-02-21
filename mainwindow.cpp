@@ -111,6 +111,9 @@ void MainWindow::initialize()
     O2SettingsStore *settingsStore = new O2SettingsStore(o2Settings, m_o2InternalSettings->value("encryption_key").toString());
     // Set the store before starting OAuth, i.e before calling link()
     m_oauth2->setStore(settingsStore);
+
+    QObject::connect(m_oauth2, SIGNAL(refreshFinished(QNetworkReply::NetworkError)),
+                     this, SLOT(onRefreshTokenFinished(QNetworkReply::NetworkError)));
 }
 
 void MainWindow::openNoteDialog()
@@ -423,5 +426,20 @@ void MainWindow::checkUpdates()
     else
     {
         QMessageBox::information(this, "Vérification des mises à jour", "Vous avez déjà la dernière version de YellowNote.");
+    }
+}
+
+void MainWindow::onRefreshTokenFinished(QNetworkReply::NetworkError error)
+{
+    // Si il y a eu une erreur lors de la demande d'un refresh token
+    // c'est problablement qu'il est expiré
+    if (error != QNetworkReply::NoError)
+    {
+        // On demande donc la reconnexion
+        QMessageBox::warning(this, "Connexion impossible",
+            "La connexion a expirée. Vous devez vous reconnecter.");
+        ConnexionDialog dialog(m_oauth2, this);
+        QObject::connect(&dialog, SIGNAL(connected()), this, SLOT(sync()));
+        dialog.exec();
     }
 }

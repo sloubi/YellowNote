@@ -1,6 +1,7 @@
 #include "connexiondialog.h"
 
-ConnexionDialog::ConnexionDialog(Oauth2 *o2, QWidget *parent) : QDialog(parent)
+ConnexionDialog::ConnexionDialog(Oauth2 *o2, QWidget *parent)
+    : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 {
     setWindowTitle("Connexion");
     m_user = new QLineEdit;
