@@ -107,7 +107,7 @@ void MainWindow::initialize()
     m_oauth2->setTokenUrl(m_o2InternalSettings->value("token_url").toString());
     m_oauth2->setRefreshTokenUrl(m_o2InternalSettings->value("refresh_token_url").toString());
 
-    QSettings *o2Settings = new QSettings("Sloubi", "oAuth2");
+    QSettings *o2Settings = new QSettings("oauth.ini", QSettings::IniFormat);
     O2SettingsStore *settingsStore = new O2SettingsStore(o2Settings, m_o2InternalSettings->value("encryption_key").toString());
     // Set the store before starting OAuth, i.e before calling link()
     m_oauth2->setStore(settingsStore);
