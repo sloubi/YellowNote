@@ -5,6 +5,7 @@
         <file alias="sync">arrow_refresh.png</file>
         <file alias="delete">bin_closed.png</file>
         <file alias="infos">information.png</file>
+        <file alias="menu">menu.png</file>
     </qresource>
     <qresource prefix="/config">
         <file>oauth.ini</file>

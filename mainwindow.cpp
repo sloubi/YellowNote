@@ -56,21 +56,33 @@ void MainWindow::createMenus()
     QAction *actionAbout = new QAction("&À propos de YellowNote", this);
     connect(actionAbout, SIGNAL(triggered()), this, SLOT(about()));
 
-    QMenu *menuNotes = menuBar()->addMenu("&Notes");
-    menuNotes->addAction(actionNew);
-    menuNotes->addAction(actionDelete);
-    menuNotes->addAction(actionSync);
-    menuNotes->addAction(actionQuit);
+    QWidget* spacer = new QWidget();
+    spacer->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
 
-    QMenu *menuHelp = menuBar()->addMenu("&Aide");
-    menuHelp->addAction(actionCheckUpdates);
-    menuHelp->addAction(actionAbout);
+    QMenu *mainMenu = new QMenu(this);
+    mainMenu->addAction(actionSync);
+    mainMenu->addSeparator();
+    mainMenu->addAction(actionCheckUpdates);
+    mainMenu->addAction(actionAbout);
+    mainMenu->addSeparator();
+    mainMenu->addAction(actionQuit);
+
+    QToolButton *mainButton = new QToolButton();
+    mainButton->setMenu(mainMenu);
+    mainButton->setIcon(QIcon(":/note/menu"));
+    mainButton->setToolTip("Menu principal de YellowNote");
+    mainButton->setPopupMode(QToolButton::InstantPopup);
+    mainButton->setStyleSheet("QToolButton::menu-indicator { image: none; }");
 
     QToolBar *toolBar = addToolBar("Toolbar");
     toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    toolBar->setMovable(false);
+    toolBar->setStyleSheet("QToolBar { border: 0; }");
     toolBar->addAction(actionNew);
     toolBar->addAction(actionDelete);
     toolBar->addAction(actionSync);
+    toolBar->addWidget(spacer);
+    toolBar->addWidget(mainButton);
 }
 
 void MainWindow::initialize()
