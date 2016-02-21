@@ -6,6 +6,7 @@
         <file alias="delete">bin_closed.png</file>
         <file alias="infos">information.png</file>
         <file alias="menu">menu.png</file>
+        <file alias="refresh">refresh.gif</file>
     </qresource>
     <qresource prefix="/config">
         <file>oauth.ini</file>

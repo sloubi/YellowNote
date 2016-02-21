@@ -44,6 +44,7 @@ public slots:
     void handleHotKeyEvent(int modifier, int key);
     void checkUpdates();
     void onRefreshTokenFinished(QNetworkReply::NetworkError error);
+    void setSyncButtonIcon(int frame);
 
 private:
     QListWidget *m_listWidget;
@@ -51,6 +52,9 @@ private:
     Oauth2 *m_oauth2;
     QSettings *m_o2InternalSettings;
     HotKeyThread *m_hotKeyThread;
+    QAction *m_actionSync;
+    QMovie *m_movieIconSync;
+    bool m_syncInProgress;
 };
 
 #endif // MAINWINDOW_H

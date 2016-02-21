@@ -26,6 +26,18 @@ MainWindow::MainWindow() : QMainWindow()
     initialize();
 }
 
+void MainWindow::setSyncButtonIcon(int frame)
+{
+    m_actionSync->setIcon(QIcon(m_movieIconSync->currentPixmap()));
+
+    // Si la sync est terminée, on laisse le gif finir sa boucle
+    // puis on l'arrête
+    if ( ! m_syncInProgress && frame == 0)
+    {
+        m_movieIconSync->stop();
+    }
+}
+
 void MainWindow::createMenus()
 {
     QAction *actionQuit = new QAction("&Quitter", this);
@@ -44,11 +56,15 @@ void MainWindow::createMenus()
     actionDelete->setShortcut(QKeySequence("Del"));
     connect(actionDelete, SIGNAL(triggered()), this, SLOT(deleteSelectedNote()));
 
-    QAction *actionSync = new QAction("&Synchroniser", this);
-    actionSync->setIcon(QIcon(":/note/sync"));
-    actionSync->setIconText("Synchroniser");
-    actionSync->setShortcut(QKeySequence("Ctrl+S"));
-    connect(actionSync, SIGNAL(triggered()), this, SLOT(sync()));
+    m_actionSync = new QAction("&Synchroniser", this);
+    m_actionSync->setIcon(QIcon(":/note/refresh"));
+    m_actionSync->setIconText("Synchroniser");
+    m_actionSync->setShortcut(QKeySequence("Ctrl+S"));
+    connect(m_actionSync, SIGNAL(triggered()), this, SLOT(sync()));
+
+    // Animated icon
+    m_movieIconSync = new QMovie(":/note/refresh");
+    connect(m_movieIconSync, SIGNAL(frameChanged(int)), this, SLOT(setSyncButtonIcon(int)));
 
     QAction *actionCheckUpdates = new QAction("&Vérifier les mises à jour", this);
     connect(actionCheckUpdates, SIGNAL(triggered()), this, SLOT(checkUpdates()));
@@ -60,7 +76,7 @@ void MainWindow::createMenus()
     spacer->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
 
     QMenu *mainMenu = new QMenu(this);
-    mainMenu->addAction(actionSync);
+    mainMenu->addAction(m_actionSync);
     mainMenu->addSeparator();
     mainMenu->addAction(actionCheckUpdates);
     mainMenu->addAction(actionAbout);
@@ -80,7 +96,7 @@ void MainWindow::createMenus()
     toolBar->setStyleSheet("QToolBar { border: 0; }");
     toolBar->addAction(actionNew);
     toolBar->addAction(actionDelete);
-    toolBar->addAction(actionSync);
+    toolBar->addAction(m_actionSync);
     toolBar->addWidget(spacer);
     toolBar->addWidget(mainButton);
 }
@@ -209,6 +225,7 @@ void MainWindow::editNoteFromDialog(NoteDialog *noteDialog)
 {
     noteDialog->note()->setTitle(noteDialog->title());
     noteDialog->note()->setContent(noteDialog->content());
+    noteDialog->note()->setToSync(true);
     noteDialog->note()->editInDb();
 
     noteDialog->note()->item()->update();
@@ -302,6 +319,9 @@ void MainWindow::sync()
 {
     if (m_oauth2->linked())
     {
+        m_syncInProgress = true;
+        m_movieIconSync->start();
+
         QNetworkAccessManager *manager = new QNetworkAccessManager();
         O2Requestor *requestor = new O2Requestor(manager, m_oauth2);
 
@@ -405,9 +425,10 @@ void MainWindow::onSyncRequestFinished(int id, QNetworkReply::NetworkError error
         else
         {
             QMessageBox::critical(this, "Erreur de connexion", "Une erreur est survenue en contactant le serveur YellowNote. Veuillez réessayer plus tard.");
-            return;
         }
     }
+
+    m_syncInProgress = false;
 }
 
 void MainWindow::handleHotKeyEvent(int modifier, int key)
