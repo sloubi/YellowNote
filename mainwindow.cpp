@@ -45,7 +45,7 @@ void MainWindow::createMenus()
     connect(actionQuit, SIGNAL(triggered()), this, SLOT(close()));
 
     QAction *actionNew = new QAction("&Nouvelle note", this);
-    actionNew->setIcon(QIcon(":/note/add"));
+    actionNew->setIcon(QIcon(":/note/note"));
     actionNew->setIconText("Nouvelle Note");
     actionNew->setShortcut(QKeySequence("Ctrl+N"));
     connect(actionNew, SIGNAL(triggered()), this, SLOT(openNoteDialog()));
@@ -91,6 +91,7 @@ void MainWindow::createMenus()
     mainButton->setStyleSheet("QToolButton::menu-indicator { image: none; }");
 
     QToolBar *toolBar = addToolBar("Toolbar");
+    toolBar->setIconSize(QSize(24, 24));
     toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolBar->setMovable(false);
     toolBar->setStyleSheet("QToolBar { border: 0; }");
@@ -294,7 +295,8 @@ void MainWindow::about()
     aboutString += "<font color='#5C5C5C'>Compilé le " + builtDate.toString("dd/MM/yyyy") + " à " + QString(__TIME__) + "<br>";
     aboutString += "Qt " + QString(QT_VERSION_STR) + "<br>";
     aboutString += "SQLite " + sqliteVersion + "<br>";
-    aboutString += "OAuth 2.0 for Qt by <a href='https://github.com/pipacs/o2'>pipacs</a></font>";
+    aboutString += "OAuth 2.0 for Qt par <a href='https://github.com/pipacs/o2'>pipacs</a><br>";
+    aboutString += "Icônes par <a href='https://icons8.com/'>icons8</a></font>";
 
     QLabel *text = new QLabel(dialog);
     text->setText(aboutString);
