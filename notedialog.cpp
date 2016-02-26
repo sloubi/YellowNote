@@ -8,7 +8,7 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
 
     m_title = new QLineEdit;
     m_title->setPlaceholderText("Titre");
-    m_title->setStyleSheet("border:0; border-bottom:1px solid #ddd; padding: 10px;");
+    m_title->setStyleSheet("border:0; border-bottom:1px solid #ddd; padding: 8px; font-size: 13px;");
 
     m_content = new QTextEdit;
     m_content->setPlaceholderText("Commencez à taper votre note");
