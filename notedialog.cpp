@@ -162,6 +162,7 @@ void NoteDialog::save()
     if (m_changed)
     {
         emit backupRequested(this);
+        m_title->setText(m_note->title());
         setWindowTitle(m_note->title());
         m_changed = false;
     }
