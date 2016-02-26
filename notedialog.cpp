@@ -12,7 +12,8 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
 
     m_content = new QTextEdit;
     m_content->setPlaceholderText("Commencez à taper votre note");
-    m_content->setStyleSheet("QTextEdit { border: 0; background-color: #fff; padding: 10px; padding-right: 0; }");
+    m_content->setStyleSheet("QTextEdit { border: 0; }");
+    m_content->document()->setDocumentMargin(10);
     m_content->setAcceptRichText(false);
 
     m_changed = false;
