@@ -391,7 +391,7 @@ void MainWindow::onSyncRequestFinished(int id, QNetworkReply::NetworkError error
                 QString sharedKey = obj["shared_key"].toString();
 
                 // La note a été supprimée sur le serveur, on la supprime aussi ici
-                if (obj["to_delete"].toBool())
+                if (obj["to_delete"].toString().toInt())
                 {
                     Note::deleteInDb(sharedKey);
                 }
