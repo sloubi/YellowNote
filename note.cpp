@@ -14,8 +14,9 @@ Note::Note(const QString & title, const QString & content, const QString & share
     // Dans la modification d'une note, on utilise le setter
     if (title == "")
     {
-        m_title = m_content.left(40);
-        if (m_content.size() > 40)
+        QString firstLine = m_content.split(QRegExp("[\r\n]"), QString::SkipEmptyParts).at(0);
+        m_title = firstLine.left(40);
+        if (firstLine.size() > 40)
             m_title += "...";
     }
 
