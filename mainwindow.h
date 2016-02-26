@@ -7,6 +7,7 @@
 #include <QtWidgets>
 #include <QtSql>
 #include <QNetworkReply>
+#include <QSettings>
 #include "oauth2.h"
 #include "o2/o2settingsstore.h"
 #include "o2/o2requestor.h"
@@ -30,6 +31,7 @@ protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
     Note* addNoteFromDialog(NoteDialog *noteDialog);
     void editNoteFromDialog(NoteDialog *noteDialog);
+    void resizeEvent(QResizeEvent* event) Q_DECL_OVERRIDE;
 
 public slots:
     void openNoteDialog();
@@ -55,6 +57,7 @@ private:
     QAction *m_actionSync;
     QMovie *m_movieIconSync;
     bool m_syncInProgress;
+    QSettings *m_settings;
 };
 
 #endif // MAINWINDOW_H

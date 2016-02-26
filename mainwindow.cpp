@@ -125,6 +125,15 @@ void MainWindow::initialize()
         }
     }
 
+    // Récupération des options
+    m_settings = new QSettings("yellownote.ini", QSettings::IniFormat);
+
+    // Réassignation de la taille de la fenêtre
+    if (m_settings->contains("size"))
+    {
+        resize(m_settings->value("size").toSize());
+    }
+
     // Récupération de la configuration du serveur oAuth2
     m_o2InternalSettings = new QSettings(":/config/oauth.ini", QSettings::IniFormat);
 
@@ -477,4 +486,11 @@ void MainWindow::onRefreshTokenFinished(QNetworkReply::NetworkError error)
         QObject::connect(&dialog, SIGNAL(connected()), this, SLOT(sync()));
         dialog.exec();
     }
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event)
+{
+   QWidget::resizeEvent(event);
+
+   m_settings->setValue("size", size());
 }
