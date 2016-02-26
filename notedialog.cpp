@@ -226,6 +226,15 @@ void NoteDialog::infos()
 void NoteDialog::deleteMe()
 {
     // signal de suppression
-    emit deletionRequested(m_note);
+    if (m_note)
+    {
+        emit deletionRequested(m_note);
+    }
+
+    // close() va lancer l'évènement de fermeture et donc save() va être appelé
+    // pour éviter que la note soit sauvegardée, on fait comme si la note n'avait pas été modifiée
+    // c'est important dans le cas où on veut supprimer une note qui n'est pas encore enregistrée
+    m_changed = false;
+
     close();
 }
