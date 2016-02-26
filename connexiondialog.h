@@ -5,7 +5,9 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QFormLayout>
+#include <QVBoxLayout>
 #include <QMessageBox>
+#include <QLabel>
 #include "oauth2.h"
 
 class ConnexionDialog : public QDialog

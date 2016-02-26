@@ -4,6 +4,8 @@ ConnexionDialog::ConnexionDialog(Oauth2 *o2, QWidget *parent)
     : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 {
     setWindowTitle("Connexion");
+    setFixedSize(QSize(310, 175));
+
     m_user = new QLineEdit;
     m_pass = new QLineEdit;
     m_pass->setEchoMode(QLineEdit::Password);
@@ -11,11 +13,26 @@ ConnexionDialog::ConnexionDialog(Oauth2 *o2, QWidget *parent)
     m_connexionButton = new QPushButton("Connexion");
     QObject::connect(m_connexionButton, SIGNAL(clicked()), this, SLOT(connexion()));
 
-    QFormLayout *layout = new QFormLayout;
-    layout->addRow("Email", m_user);
-    layout->addRow("Mot de passe", m_pass);
-    layout->addWidget(m_connexionButton);
-    setLayout(layout);
+    QLabel *header = new QLabel("<b>Connexion à votre compte YellowNote</b><br>"
+        "La connexion vous permet de synchroniser vos notes."
+    );
+    header->setStyleSheet("background: #fff; padding: 10px; border-bottom: 1px solid #ddd;");
+
+    QLabel *registerLink = new QLabel("<a href='http://yellownote.sloubi.eu'>Je n'ai pas encore de compte.</a>");
+    registerLink->setOpenExternalLinks(true);
+
+    QFormLayout *formLayout = new QFormLayout;
+    formLayout->setMargin(10);
+    formLayout->addRow("Email", m_user);
+    formLayout->addRow("Mot de passe", m_pass);
+    formLayout->addWidget(m_connexionButton);
+    formLayout->addWidget(registerLink);
+
+    QVBoxLayout *mainLayout = new QVBoxLayout();
+    mainLayout->setMargin(0);
+    mainLayout->addWidget(header);
+    mainLayout->addLayout(formLayout);
+    setLayout(mainLayout);
 
     m_o2 = o2;
     connect(m_o2, SIGNAL(linkingFailed()), this, SLOT(error()));
