@@ -1,20 +1,29 @@
 #include "notedialog.h"
 #include "note.h"
 #include "mainwindow.h"
+#include <QFont>
 
 NoteDialog::NoteDialog(Note *note) : QWidget()
 {
     setWindowTitle(note == 0 ? "Nouvelle note" : note->title());
 
+    // Récupération des options
+    m_settings = new QSettings("yellownote.ini", QSettings::IniFormat);
+
+    QString fontFamily = m_settings->value("note/fontfamily", "Segoe UI").toString();
+    int fontSize = m_settings->value("note/fontsize", 9).toInt();
+
     m_title = new QLineEdit;
     m_title->setPlaceholderText("Titre");
-    m_title->setStyleSheet("border:0; border-bottom:1px solid #ddd; padding: 8px; font-size: 13px;");
+    m_title->setFont(QFont(fontFamily, fontSize + 1));
+    m_title->setStyleSheet("border:0; border-bottom:1px solid #ddd; padding: 8px;");
 
     m_content = new QTextEdit;
     m_content->setPlaceholderText("Commencez à taper votre note");
     m_content->setStyleSheet("QTextEdit { border: 0; }");
     m_content->document()->setDocumentMargin(10);
     m_content->setAcceptRichText(false);
+    m_content->setFont(QFont(fontFamily, fontSize));
 
     m_changed = false;
 
@@ -64,9 +73,6 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
 
     connect(m_title, SIGNAL(textChanged(QString)), this, SLOT(handleChanging(QString)));
     connect(m_content, SIGNAL(textChanged()), this, SLOT(handleChanging()));
-
-    // Récupération des options
-    m_settings = new QSettings("yellownote.ini", QSettings::IniFormat);
 
     // Réassignation de la taille de la fenêtre
     if (m_settings->contains("note/size"))
