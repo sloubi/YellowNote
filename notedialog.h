@@ -2,6 +2,7 @@
 #define NOTEDIALOG_H
 
 #include <QtWidgets>
+#include "noteedit.h"
 class Note;
 
 class NoteDialog : public QWidget
@@ -17,31 +18,28 @@ class NoteDialog : public QWidget
         void setTitle(const QString & content);
         void setNote(Note* note);
         void setFocus();
+        void update();
 
     protected:
         void changeEvent(QEvent *event);
         void closeEvent(QCloseEvent *event);
         void resizeEvent(QResizeEvent* event);
-        void save();
+        virtual void attachToNote();
 
     signals:
-        void backupRequested(NoteDialog *);
+        void newNote(Note *);
         void deletionRequested(Note *);
 
     protected slots:
-        void handleChanging(const QString & text = "");
         void infos();
         void deleteMe();
+        bool save();
 
-    private:
-        QTextEdit *m_content;
-        QLineEdit *m_title;
+    protected:
+        NoteEdit *m_noteEdit;
         QSettings *m_settings;
-
-        // La note a-t-elle subit un changement depuis le dernier enregistrement
-        bool m_changed;
-
         Note *m_note;
+        QAction *m_actionDelete;
 };
 
 #endif // NOTEDIALOG_H

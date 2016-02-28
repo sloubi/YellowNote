@@ -10,20 +10,48 @@ MainWindow::MainWindow() : QMainWindow()
 {
     setWindowTitle("YellowNote");
 
-    m_listWidget = new QListWidget();
+    // Récupération des options
+    m_settings = new QSettings("yellownote.ini", QSettings::IniFormat);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout();
-    mainLayout->addWidget(m_listWidget);
-
-    QWidget *central = new QWidget;
-    central->setLayout(mainLayout);
-    setCentralWidget(central);
-
-    QObject::connect(m_listWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openEditNoteDialog(QListWidgetItem*)));
-
-    createMenus();
+    createList();
+    createPanel();
+    createActions();
 
     initialize();
+
+    // Restore sizes, positions, etc.
+    if (m_settings->contains("geometry"))
+        restoreGeometry(m_settings->value("geometry").toByteArray());
+    if (m_settings->contains("windowState"))
+        restoreState(m_settings->value("windowState").toByteArray());
+}
+
+void MainWindow::createList()
+{
+    m_listWidget = new QListWidget();
+    m_listWidget->setStyleSheet("QListWidget { background-color: #fff; border: 0; border-right: 1px solid #ddd; padding: 10px; }");
+    m_listWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_listWidget->setUniformItemSizes(true);
+
+    QObject::connect(m_listWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openEditNoteDialog(QListWidgetItem*)));
+    QObject::connect(m_listWidget, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
+                     this, SLOT(handleCurrentItemChanged(QListWidgetItem*, QListWidgetItem*)));
+
+    setCentralWidget(m_listWidget);
+}
+
+void MainWindow::createPanel()
+{
+    m_notePanel = new NotePanel();
+    QObject::connect(m_notePanel, SIGNAL(newNote(Note*)), this, SLOT(addNoteToList(Note*)));
+    QObject::connect(m_notePanel, SIGNAL(deletionRequested(Note*)), this, SLOT(deleteNote(Note*)));
+
+    QDockWidget *dock = new QDockWidget("Panneau d'affichage de note", this);
+    dock->setObjectName("notePanel");
+    dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    dock->setTitleBarWidget(new QWidget());
+    dock->setWidget(m_notePanel);
+    addDockWidget(Qt::RightDockWidgetArea, dock);
 }
 
 void MainWindow::setSyncButtonIcon(int frame)
@@ -38,7 +66,7 @@ void MainWindow::setSyncButtonIcon(int frame)
     }
 }
 
-void MainWindow::createMenus()
+void MainWindow::createActions()
 {
     QAction *actionQuit = new QAction("&Quitter", this);
     actionQuit->setShortcut(QKeySequence("Ctrl+Q"));
@@ -90,11 +118,12 @@ void MainWindow::createMenus()
     mainButton->setPopupMode(QToolButton::InstantPopup);
     mainButton->setStyleSheet("QToolButton::menu-indicator { image: none; }");
 
-    QToolBar *toolBar = addToolBar("Toolbar");
+    QToolBar *toolBar = addToolBar("Barre d'outils");
+    toolBar->setObjectName("toolBar");
     toolBar->setIconSize(QSize(24, 24));
     toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolBar->setMovable(false);
-    toolBar->setStyleSheet("QToolBar { border: 0; }");
+    toolBar->setStyleSheet("QToolBar { border-bottom: 1px solid #ddd; padding: 8px; }");
     toolBar->addAction(actionNew);
     toolBar->addAction(actionDelete);
     toolBar->addAction(m_actionSync);
@@ -116,6 +145,7 @@ void MainWindow::initialize()
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName("notes.db");
 
+    // Création de la liste
     QList<Note*> notes = Note::loadFromDb();
     if ( ! notes.empty())
     {
@@ -125,8 +155,8 @@ void MainWindow::initialize()
         }
     }
 
-    // Récupération des options
-    m_settings = new QSettings("yellownote.ini", QSettings::IniFormat);
+    // Sélection de la première note de la liste
+    m_listWidget->setCurrentItem(m_listWidget->item(0));
 
     // Réassignation de la taille de la fenêtre
     if (m_settings->contains("size"))
@@ -159,7 +189,7 @@ void MainWindow::openNoteDialog()
     NoteDialog *dialog = new NoteDialog();
     dialog->show();
 
-    QObject::connect(dialog, SIGNAL(backupRequested(NoteDialog*)), this, SLOT(saveNoteFromDialog(NoteDialog*)));
+    QObject::connect(dialog, SIGNAL(newNote(Note*)), this, SLOT(addNoteToList(Note*)));
     QObject::connect(dialog, SIGNAL(deletionRequested(Note*)), this, SLOT(deleteNote(Note*)));
 }
 
@@ -177,7 +207,7 @@ void MainWindow::openEditNoteDialog(QListWidgetItem *item)
     NoteDialog *dialog = new NoteDialog(noteItem->note());
     dialog->show();
 
-    QObject::connect(dialog, SIGNAL(backupRequested(NoteDialog*)), this, SLOT(saveNoteFromDialog(NoteDialog*)));
+    QObject::connect(dialog, SIGNAL(newNote(Note*)), this, SLOT(addNoteToList(Note*)));
     QObject::connect(dialog, SIGNAL(deletionRequested(Note*)), this, SLOT(deleteNote(Note*)));
 }
 
@@ -200,51 +230,9 @@ void MainWindow::addNoteToList(Note *note)
     note->setItem(item);
 }
 
-void MainWindow::saveNoteFromDialog(NoteDialog *noteDialog)
-{
-    // Si c'est un ajout
-    if (noteDialog->note() == 0)
-    {
-       addNoteFromDialog(noteDialog);
-    }
-
-    // Modification
-    else
-    {
-        editNoteFromDialog(noteDialog);
-    }
-}
-
-Note* MainWindow::addNoteFromDialog(NoteDialog *noteDialog)
-{
-    // On ne crée pas la note si elle n'a pas encore de contenu
-    if (noteDialog->title().isEmpty() && noteDialog->content().isEmpty())
-        return 0;
-
-    Note *note = new Note(noteDialog->title(), noteDialog->content());
-    note->addToDb();
-    addNoteToList(note);
-
-    // On rattache la Note au dialog
-    noteDialog->setNote(note);
-
-    return note;
-}
-
-void MainWindow::editNoteFromDialog(NoteDialog *noteDialog)
-{
-    noteDialog->note()->setTitle(noteDialog->title());
-    noteDialog->note()->setContent(noteDialog->content());
-    noteDialog->note()->setToSync(true);
-    noteDialog->note()->editInDb();
-
-    noteDialog->note()->item()->update();
-}
-
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    // On ferme le thread des raccourcis clavier
-    m_hotKeyThread->stop();
+    beforeClose();
 
     // On laisse la fenêtre se fermer
     event->accept();
@@ -252,10 +240,18 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::close()
 {
+    beforeClose();
+    qApp->quit();
+}
+
+void MainWindow::beforeClose()
+{
     // On ferme le thread des raccourcis clavier
     m_hotKeyThread->stop();
 
-    qApp->quit();
+    // On enregistre la taille de la fenêtre, la position du panneau etc.
+    m_settings->setValue("geometry", saveGeometry());
+    m_settings->setValue("windowState", saveState());
 }
 
 void MainWindow::deleteSelectedNote()
@@ -488,9 +484,16 @@ void MainWindow::onRefreshTokenFinished(QNetworkReply::NetworkError error)
     }
 }
 
-void MainWindow::resizeEvent(QResizeEvent* event)
+void MainWindow::handleCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous)
 {
-   QWidget::resizeEvent(event);
+    NoteListWidgetItem *currentNoteItem = static_cast<NoteListWidgetItem*>(current);
+    m_notePanel->setNote(currentNoteItem->note());
+    m_notePanel->update();
+    currentNoteItem->note()->setNotePanel(m_notePanel);
 
-   m_settings->setValue("size", size());
+    if (previous)
+    {
+        NoteListWidgetItem *previousNoteItem = static_cast<NoteListWidgetItem*>(previous);
+        previousNoteItem->note()->setNotePanel(0);
+    }
 }

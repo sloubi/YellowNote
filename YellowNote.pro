@@ -18,7 +18,9 @@ SOURCES += \
     oauth2.cpp \
     connexiondialog.cpp \
     sqlutils.cpp \
-    hotkeythread.cpp
+    hotkeythread.cpp \
+    noteedit.cpp \
+    notepanel.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -36,7 +38,9 @@ HEADERS += \
     oauth2.h \
     connexiondialog.h \
     sqlutils.h \
-    hotkeythread.h
+    hotkeythread.h \
+    noteedit.h \
+    notepanel.h
 
 RC_FILE = app.rc
 

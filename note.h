@@ -9,6 +9,7 @@
 #include <QtSql>
 class NoteListWidgetItem;
 class NoteDialog;
+class NotePanel;
 
 class Note
 {
@@ -25,6 +26,7 @@ class Note
         bool toSync() const;
         NoteListWidgetItem* item();
         NoteDialog* noteDialog();
+        NotePanel* notePanel();
         void setTitle(const QString & title);
         void setContent(const QString & content);
         void setId(const int id);
@@ -35,6 +37,7 @@ class Note
         void setToSync(const bool toSync);
         void setItem(NoteListWidgetItem* item);
         void setNoteDialog(NoteDialog *noteDialog);
+        void setNotePanel(NotePanel *notePanel);
         static QList<Note> readFromFile();
         static void writeToFile(const QList<Note> & notes);
         static void createNotesTableIfNotExists();
@@ -61,6 +64,7 @@ class Note
         QDateTime m_syncedAt;
         NoteListWidgetItem *m_item;
         NoteDialog *m_noteDialog;
+        NotePanel *m_notePanel;
 };
 
 #endif // NOTE_H

@@ -1,7 +1,6 @@
 #include "notedialog.h"
 #include "note.h"
 #include "mainwindow.h"
-#include <QFont>
 
 NoteDialog::NoteDialog(Note *note) : QWidget()
 {
@@ -10,31 +9,13 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
     // Récupération des options
     m_settings = new QSettings("yellownote.ini", QSettings::IniFormat);
 
-    QString fontFamily = m_settings->value("note/fontfamily", "Segoe UI").toString();
-    int fontSize = m_settings->value("note/fontsize", 9).toInt();
-
-    m_title = new QLineEdit;
-    m_title->setPlaceholderText("Titre");
-    m_title->setFont(QFont(fontFamily, fontSize + 1));
-    m_title->setStyleSheet("border:0; border-bottom:1px solid #ddd; padding: 8px;");
-
-    m_content = new QTextEdit;
-    m_content->setPlaceholderText("Commencez à taper votre note");
-    m_content->setStyleSheet("QTextEdit { border: 0; }");
-    m_content->document()->setDocumentMargin(10);
-    m_content->setAcceptRichText(false);
-    m_content->setFont(QFont(fontFamily, fontSize));
-
-    m_changed = false;
+    // Création des champs title et content
+    m_noteEdit = new NoteEdit(m_settings, this);
 
     m_note = note;
-    if (m_note)
-        m_note->setNoteDialog(this);
 
-    // Pour que la zone de texte s'étire aussi quand la fenêtre est redimensionnée
-    QSizePolicy policy = m_content->sizePolicy();
-    policy.setVerticalStretch(1);
-    m_content->setSizePolicy(policy);
+    // Assignation du dialog à la note
+    attachToNote();
 
     // Si on est en modification, on remplit les champs
     if (note != 0)
@@ -48,10 +29,10 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
     actionInfos->setIconText("Infos");
     connect(actionInfos, SIGNAL(triggered()), this, SLOT(infos()));
 
-    QAction *actionDelete = new QAction("&Supprimer", this);
-    actionDelete->setIcon(QIcon(":/note/delete"));
-    actionDelete->setIconText("Supprimer");
-    connect(actionDelete, SIGNAL(triggered()), this, SLOT(deleteMe()));
+    m_actionDelete = new QAction("&Supprimer", this);
+    m_actionDelete->setIcon(QIcon(":/note/delete"));
+    m_actionDelete->setIconText("Supprimer");
+    connect(m_actionDelete, SIGNAL(triggered()), this, SLOT(deleteMe()));
 
     QWidget *spacerWidget = new QWidget(this);
     spacerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -61,18 +42,14 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
     toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolBar->addWidget(spacerWidget);
     toolBar->addAction(actionInfos);
-    toolBar->addAction(actionDelete);
+    toolBar->addAction(m_actionDelete);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->setMargin(0);
     mainLayout->setSpacing(0);
     mainLayout->addWidget(toolBar);
-    mainLayout->addWidget(m_title);
-    mainLayout->addWidget(m_content);
+    mainLayout->addWidget(m_noteEdit);
     setLayout(mainLayout);
-
-    connect(m_title, SIGNAL(textChanged(QString)), this, SLOT(handleChanging(QString)));
-    connect(m_content, SIGNAL(textChanged()), this, SLOT(handleChanging()));
 
     // Réassignation de la taille de la fenêtre
     if (m_settings->contains("note/size"))
@@ -83,9 +60,6 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
     // Donne le focus à la fenêtre (quand elle est créée
     // depuis un raccouri clavier global)
     setFocus();
-
-    // Donne le focus sur le champ note
-    m_content->setFocus();
 }
 
 void NoteDialog::setFocus()
@@ -97,12 +71,12 @@ void NoteDialog::setFocus()
 
 QString NoteDialog::content() const
 {
-    return m_content->toPlainText();
+    return m_noteEdit->content();
 }
 
 QString NoteDialog::title() const
 {
-    return m_title->text();
+    return m_noteEdit->title();
 }
 
 Note * NoteDialog::note()
@@ -112,23 +86,18 @@ Note * NoteDialog::note()
 
 void NoteDialog::setTitle(const QString & title)
 {
-    m_title->setText(title);
+    m_noteEdit->setTitle(title);
 }
 
 void NoteDialog::setContent(const QString & content)
 {
-    m_content->setText(content);
+    m_noteEdit->setContent(content);
 }
 
 void NoteDialog::setNote(Note* note)
 {
     m_note = note;
-    m_note->setNoteDialog(this);
-}
-
-void NoteDialog::handleChanging(const QString & text)
-{
-    m_changed = true;
+    attachToNote();
 }
 
 void NoteDialog::changeEvent(QEvent *event)
@@ -140,7 +109,6 @@ void NoteDialog::changeEvent(QEvent *event)
     if (event->type() == QEvent::ActivationChange && ! this->isActiveWindow())
     {
         save();
-        m_changed = false;
     }
 }
 
@@ -162,15 +130,50 @@ void NoteDialog::resizeEvent(QResizeEvent* event)
    m_settings->setValue("note/size", size());
 }
 
-void NoteDialog::save()
+bool NoteDialog::save()
 {
-    if (m_changed)
+    if (m_noteEdit->hasChanged())
     {
-        emit backupRequested(this);
-        m_title->setText(m_note->title());
+        // Si c'est un ajout
+        if (m_note == 0)
+        {
+            // Création de la note
+            Note *note = new Note(title(), content());
+            note->addToDb();
+            setNote(note);
+
+            // Ajout de la note dans la liste
+            emit newNote(note);
+        }
+
+        // Modification
+        else
+        {
+            // Mise à jour de la note elle-même
+            m_note->setTitle(title());
+            m_note->setContent(content());
+            m_note->setToSync(true);
+            m_note->editInDb();
+
+            // Mise à jour de la note dans la liste
+            m_note->item()->update();
+
+            // Si la note est dans le panneau, on le met à jour
+            if (m_note->notePanel())
+            {
+                m_note->notePanel()->update();
+            }
+        }
+
+        // Mise à jour du titre (après génération automatique)
+        m_noteEdit->setTitle(m_note->title());
         setWindowTitle(m_note->title());
-        m_changed = false;
+
+        // Enregistrement terminée, il n'y a donc plus de changements en attente
+        m_noteEdit->setNoChange();
+        return true;
     }
+    return false;
 }
 
 void NoteDialog::infos()
@@ -190,9 +193,9 @@ void NoteDialog::infos()
     QLabel *sync = new QLabel(m_note->toSync() ? "Synchronisation nécessaire" :
         "Synchronisé le " + m_note->syncedAt().toString("d MMM yyyy à hh:mm:ss"));
 
-    QLabel *chars = new QLabel(QString::number(content().size()));
-    QLabel *words = new QLabel(QString::number(content().split(QRegExp("(\\s|\\n|\\r)+"), QString::SkipEmptyParts).count()));
-    QLabel *lines = new QLabel(QString::number(m_content->document()->lineCount()));
+    QLabel *chars = new QLabel(QString::number(m_noteEdit->contentChars()));
+    QLabel *words = new QLabel(QString::number(m_noteEdit->contentWords()));
+    QLabel *lines = new QLabel(QString::number(m_noteEdit->contentLines()));
 
     creation->setAlignment(Qt::AlignRight);
     update->setAlignment(Qt::AlignRight);
@@ -239,7 +242,24 @@ void NoteDialog::deleteMe()
     // close() va lancer l'évènement de fermeture et donc save() va être appelé
     // pour éviter que la note soit sauvegardée, on fait comme si la note n'avait pas été modifiée
     // c'est important dans le cas où on veut supprimer une note qui n'est pas encore enregistrée
-    m_changed = false;
+    m_noteEdit->setNoChange();
 
     close();
+}
+
+void NoteDialog::update()
+{
+    if (m_note)
+    {
+        setTitle(m_note->title());
+        setContent(m_note->content());
+    }
+}
+
+void NoteDialog::attachToNote()
+{
+    if (m_note)
+    {
+        m_note->setNoteDialog(this);
+    }
 }

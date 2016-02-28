@@ -16,6 +16,7 @@
 #include "notedialog.h"
 #include "note.h"
 #include "hotkeythread.h"
+#include "notepanel.h"
 
 class MainWindow : public QMainWindow
 {
@@ -25,18 +26,17 @@ public:
     MainWindow();
 
 protected:
-    void createMenus();
+    void createList();
+    void createPanel();
+    void createActions();
     void initialize();
-    void addNoteToList(Note *note);
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
-    Note* addNoteFromDialog(NoteDialog *noteDialog);
-    void editNoteFromDialog(NoteDialog *noteDialog);
-    void resizeEvent(QResizeEvent* event) Q_DECL_OVERRIDE;
+    void beforeClose();
 
 public slots:
+    void addNoteToList(Note *note);
     void openNoteDialog();
     void openEditNoteDialog(QListWidgetItem *item);
-    void saveNoteFromDialog(NoteDialog *noteDialog);
     void close();
     void deleteSelectedNote();
     void deleteNote(Note *note);
@@ -47,6 +47,7 @@ public slots:
     void checkUpdates();
     void onRefreshTokenFinished(QNetworkReply::NetworkError error);
     void setSyncButtonIcon(int frame);
+    void handleCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
 
 private:
     QListWidget *m_listWidget;
@@ -58,6 +59,7 @@ private:
     QMovie *m_movieIconSync;
     bool m_syncInProgress;
     QSettings *m_settings;
+    NotePanel *m_notePanel;
 };
 
 #endif // MAINWINDOW_H
