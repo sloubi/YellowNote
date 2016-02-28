@@ -1,4 +1,5 @@
 #include "sqlutils.h"
+#include <QCoreApplication>
 
 QString SqlUtils::date(const QDateTime & dateTime)
 {
@@ -22,4 +23,19 @@ int SqlUtils::lastInsertId()
     q.exec("SELECT last_insert_rowid()");
     q.next();
     return q.value(0).toInt();
+}
+
+QString SqlUtils::sqlLiteVersion()
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery q(db);
+    q.exec("SELECT sqlite_version()");
+    q.next();
+    return q.value(0).toString();
+}
+
+QString SqlUtils::dbPath()
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    return QCoreApplication::applicationDirPath() + "/" + db.databaseName();
 }

@@ -13,6 +13,8 @@ public:
     static QDateTime date(const QString & string);
     static QString getNow();
     static int lastInsertId();
+    static QString sqlLiteVersion();
+    static QString dbPath();
 };
 
 #endif // SQLUTILS_H

@@ -20,7 +20,8 @@ SOURCES += \
     sqlutils.cpp \
     hotkeythread.cpp \
     noteedit.cpp \
-    notepanel.cpp
+    notepanel.cpp \
+    about.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -40,7 +41,8 @@ HEADERS += \
     sqlutils.h \
     hotkeythread.h \
     noteedit.h \
-    notepanel.h
+    notepanel.h \
+    about.h
 
 RC_FILE = app.rc
 

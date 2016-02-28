@@ -8,13 +8,11 @@ class Oauth2 : public O2
     Q_OBJECT
 public:
     O2AbstractStore* store();
+    static QString getMacAddress();
 
 public slots:
     /// Authenticate.
     Q_INVOKABLE virtual void link();
-
-protected:
-    QString getMacAddress();
 };
 
 #endif // OAUTH2_H

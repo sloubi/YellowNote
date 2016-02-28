@@ -5,6 +5,7 @@
 #include <QDebug>
 #include "mainwindow.h"
 #include "connexiondialog.h"
+#include "about.h"
 
 MainWindow::MainWindow() : QMainWindow()
 {
@@ -280,46 +281,8 @@ void MainWindow::deleteNote(Note *note)
 
 void MainWindow::about()
 {
-    QDialog *dialog = new QDialog(this, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint);
-    dialog->setWindowTitle("À propos de YellowNote");
-
-    QLabel *image = new QLabel(dialog);
-    image->setPixmap(QPixmap(":/note/logo"));
-
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery q(db);
-    q.exec("SELECT sqlite_version()");
-    q.next();
-    QString sqliteVersion = q.value(0).toString();
-
-    QDate builtDate = QLocale(QLocale::English).toDate(QString(__DATE__).simplified(), "MMM d yyyy");
-
-    QString aboutString;
-    aboutString += "<b>YellowNote " + QString(YELLOWNOTE_VERSION) + "</b><br>";
-    aboutString += "Par Sloubi, <a href='http://sloubi.eu'>sloubi.eu</a><br><br>";
-    aboutString += "<font color='#5C5C5C'>Compilé le " + builtDate.toString("dd/MM/yyyy") + " à " + QString(__TIME__) + "<br>";
-    aboutString += "Qt " + QString(QT_VERSION_STR) + "<br>";
-    aboutString += "SQLite " + sqliteVersion + "<br>";
-    aboutString += "OAuth 2.0 for Qt par <a href='https://github.com/pipacs/o2'>pipacs</a><br>";
-    aboutString += "Icônes par <a href='https://icons8.com/'>icons8</a></font>";
-
-    QLabel *text = new QLabel(dialog);
-    text->setText(aboutString);
-    text->setOpenExternalLinks(true);
-
-    QHBoxLayout *layout = new QHBoxLayout();
-    layout->addWidget(image);
-    layout->addWidget(text);
-
-    QPushButton *close = new QPushButton("&Fermer", dialog);
-    connect(close, SIGNAL(clicked()), dialog, SLOT(accept()));
-
-    QVBoxLayout *mainLayout = new QVBoxLayout();
-    mainLayout->addLayout(layout);
-    mainLayout->addWidget(close, 0, Qt::AlignRight);
-
-    dialog->setLayout(mainLayout);
-    dialog->exec();
+    About *about = new About(QString(YELLOWNOTE_VERSION), this);
+    about->exec();
 }
 
 void MainWindow::sync()
