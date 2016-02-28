@@ -265,6 +265,8 @@ void MainWindow::deleteSelectedNote()
 
         noteItem->note()->setDeleteInDb();
         m_notes.remove(noteItem->note()->sharedKey());
+
+        noteItem->setNote(0);
         m_listWidget->takeItem(m_listWidget->row(item));
     }
 }
@@ -275,6 +277,8 @@ void MainWindow::deleteNote(Note *note)
     {
         note->setDeleteInDb();
         m_notes.remove(note->sharedKey());
+
+        note->item()->setNote(0);
         m_listWidget->takeItem(m_listWidget->row(note->item()));
     }
 }
@@ -449,14 +453,28 @@ void MainWindow::onRefreshTokenFinished(QNetworkReply::NetworkError error)
 
 void MainWindow::handleCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous)
 {
-    NoteListWidgetItem *currentNoteItem = static_cast<NoteListWidgetItem*>(current);
-    m_notePanel->setNote(currentNoteItem->note());
-    m_notePanel->update();
-    currentNoteItem->note()->setNotePanel(m_notePanel);
+    if (current)
+    {
+        NoteListWidgetItem *currentNoteItem = static_cast<NoteListWidgetItem*>(current);
+        // On indique que la note est maintenant affichée sur le panneau
+        currentNoteItem->note()->setNotePanel(m_notePanel);
+
+        // Mise à jour du panneau avec la note sélectionné
+        m_notePanel->setNote(currentNoteItem->note());
+        m_notePanel->update();
+    }
+    // Si aucune note n'est sélectionnée (plus aucune note dans la liste)
+    else
+    {
+        // On vide la panneau
+        m_notePanel->setNote(0);
+        m_notePanel->update();
+    }
 
     if (previous)
     {
         NoteListWidgetItem *previousNoteItem = static_cast<NoteListWidgetItem*>(previous);
-        previousNoteItem->note()->setNotePanel(0);
+        if (previousNoteItem->note())
+            previousNoteItem->note()->setNotePanel(0);
     }
 }

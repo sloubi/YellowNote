@@ -254,6 +254,10 @@ void NoteDialog::update()
         setTitle(m_note->title());
         setContent(m_note->content());
     }
+    else
+    {
+        m_noteEdit->clear();
+    }
 }
 
 void NoteDialog::attachToNote()
