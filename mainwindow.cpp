@@ -266,6 +266,12 @@ void MainWindow::deleteSelectedNote()
         noteItem->note()->setDeleteInDb();
         m_notes.remove(noteItem->note()->sharedKey());
 
+        if (noteItem->note()->noteDialog())
+        {
+            noteItem->note()->noteDialog()->close();
+            noteItem->note()->setNoteDialog(0);
+        }
+
         noteItem->setNote(0);
         m_listWidget->takeItem(m_listWidget->row(item));
     }
@@ -277,6 +283,12 @@ void MainWindow::deleteNote(Note *note)
     {
         note->setDeleteInDb();
         m_notes.remove(note->sharedKey());
+
+        if (note->noteDialog())
+        {
+            note->noteDialog()->close();
+            note->setNoteDialog(0);
+        }
 
         note->item()->setNote(0);
         m_listWidget->takeItem(m_listWidget->row(note->item()));
