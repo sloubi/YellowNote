@@ -1,6 +1,8 @@
 #include <QDebug>
 #include "note.h"
 #include "notelistwidgetitem.h"
+#include "notedialog.h"
+#include "notepanel.h"
 
 Note::Note()
 {
@@ -358,4 +360,15 @@ QString Note::getJsonNotesToSync()
     }
 
     return QJsonDocument(jsonNotes).toJson(QJsonDocument::Compact);
+}
+
+void Note::updateDisplay()
+{
+    m_item->update();
+
+    if (m_noteDialog)
+        m_noteDialog->update();
+
+    if (m_notePanel)
+        m_notePanel->update();
 }

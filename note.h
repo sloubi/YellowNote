@@ -51,6 +51,7 @@ class Note
         void setSyncedNow();
         void setDeleteInDb();
         int lastInsertId();
+        void updateDisplay();
 
     private:
         int m_id;

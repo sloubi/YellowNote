@@ -375,7 +375,7 @@ void MainWindow::onSyncRequestFinished(int id, QNetworkReply::NetworkError error
                         note->setSyncedNow();
 
                         // Mise à jour de l'affichage
-                        note->item()->update();
+                        note->updateDisplay();
                     }
                     // Nouvelle note
                     else
