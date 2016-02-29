@@ -1,4 +1,5 @@
 #include "notelabel.h"
+#include <qDebug>
 
 NoteLabel::NoteLabel(Note *note) : QLabel()
 {
@@ -7,7 +8,13 @@ NoteLabel::NoteLabel(Note *note) : QLabel()
     setWordWrap(true);
     setMargin(10);
 
-    QFontMetrics fm(this->font());
+    // Corrige un bug étrange
+    // La font est 1 pt plus grosse quand on ajoute une note
+    // (mais pas quand la note est ajoutée depuis l'initialisation de l'appli)
+    QFont f("MS Shell Dlg 2", 8);
+    setFont(f);
+
+    QFontMetrics fm(font());
     // Hauteur de 3 lignes + les marges
     setFixedHeight(fm.height() * 3 + 20);
 
