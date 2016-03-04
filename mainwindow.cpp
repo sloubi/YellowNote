@@ -95,6 +95,9 @@ void MainWindow::createActions()
     m_movieIconSync = new QMovie(":/note/refresh");
     connect(m_movieIconSync, SIGNAL(frameChanged(int)), this, SLOT(setSyncButtonIcon(int)));
 
+    QAction *actionExport = new QAction("&Exporter", this);
+    connect(actionExport, SIGNAL(triggered()), this, SLOT(doExport()));
+
     QAction *actionCheckUpdates = new QAction("&Vérifier les mises à jour", this);
     connect(actionCheckUpdates, SIGNAL(triggered()), this, SLOT(checkUpdates()));
 
@@ -106,6 +109,8 @@ void MainWindow::createActions()
 
     QMenu *mainMenu = new QMenu(this);
     mainMenu->addAction(m_actionSync);
+    mainMenu->addSeparator();
+    mainMenu->addAction(actionExport);
     mainMenu->addSeparator();
     mainMenu->addAction(actionCheckUpdates);
     mainMenu->addAction(actionAbout);
@@ -489,4 +494,38 @@ void MainWindow::handleCurrentItemChanged(QListWidgetItem* current, QListWidgetI
         if (previousNoteItem->note())
             previousNoteItem->note()->setNotePanel(0);
     }
+}
+
+
+void MainWindow::doExport()
+{
+    QString dir = QFileDialog::getExistingDirectory(this,
+                                                    tr("Sélectionnez un dossier pour l'exportation"),
+                                                    QString(),
+                                                    QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    QList<Note*> notes = Note::loadFromDb();
+    if ( ! notes.empty())
+    {
+        for (int i = 0; i < notes.size(); ++i)
+        {
+            Note* note = notes.at(i);
+
+            int fileCounter = 0;
+            QFile file(dir + "/" + note->title() + ".txt");
+            while (file.exists())
+            {
+                file.setFileName(dir + "/" + note->title()
+                                 + "_" + QString::number(++fileCounter) + ".txt");
+            }
+
+            if (file.open(QIODevice::WriteOnly))
+            {
+                QTextStream stream(&file);
+                stream << note->content();
+            }
+        }
+    }
+
+    QMessageBox::information(this, "Export", "Export terminé dans " + dir);
 }
