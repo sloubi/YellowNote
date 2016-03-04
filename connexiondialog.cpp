@@ -18,7 +18,7 @@ ConnexionDialog::ConnexionDialog(Oauth2 *o2, QWidget *parent)
     );
     header->setStyleSheet("background: #fff; padding: 10px; border-bottom: 1px solid #ddd;");
 
-    QLabel *registerLink = new QLabel("<a href='http://yellownote.sloubi.eu'>Je n'ai pas encore de compte.</a>");
+    QLabel *registerLink = new QLabel("<a href='http://yellownote.sloubi.eu/register'>Je n'ai pas encore de compte.</a>");
     registerLink->setOpenExternalLinks(true);
 
     QFormLayout *formLayout = new QFormLayout;
