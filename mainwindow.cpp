@@ -289,7 +289,11 @@ void MainWindow::deleteNote(Note *note)
         note->setDeleteInDb();
         m_notes.remove(note->sharedKey());
 
-        if (note->noteDialog())
+        // Attention, on ne ferme le dialog que si la suppression n'a pas
+        // été demandée par le dialog lui-même (car le dialog se ferme tout seul après
+        // l'éxécution du SLOT)
+        QObject* obj = sender();
+        if (note->noteDialog() && obj != note->noteDialog())
         {
             note->noteDialog()->close();
             note->setNoteDialog(0);
