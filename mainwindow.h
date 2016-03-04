@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#define YELLOWNOTE_VERSION "0.1"
+#define YELLOWNOTE_VERSION "0.2"
 
 #include <QObject>
 #include <QtWidgets>
