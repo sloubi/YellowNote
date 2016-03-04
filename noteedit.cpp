@@ -29,7 +29,7 @@ NoteEdit::NoteEdit(QSettings *settings, QWidget *parent) : QWidget(parent)
     m_title->installEventFilter(this);
     m_content->installEventFilter(this);
 
-    connect(m_title, SIGNAL(textChanged(QString)), this, SLOT(handleChanging(QString)));
+    connect(m_title, SIGNAL(textEdited(QString)), this, SLOT(handleChanging(QString)));
     connect(m_content, SIGNAL(textChanged()), this, SLOT(handleChanging()));
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
@@ -106,4 +106,17 @@ void NoteEdit::clear()
 {
     m_title->clear();
     m_content->clear();
+}
+
+void NoteEdit::update(const QString& title, const QString& content)
+{
+    setTitle(title);
+
+    // Le signal textEdited() n'existe pas pour les QTextEdit
+    // On bloque donc carrément le signal, sinon le slot handleChanging va être
+    // appelé, et il va passer la note comme étant modifiée, ce qui n'est pas le cas,
+    // cette fonction étant utilisée pour mettre à jour l'affichage
+    m_content->blockSignals(true);
+    setContent(content);
+    m_content->blockSignals(false);
 }

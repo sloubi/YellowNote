@@ -14,8 +14,6 @@ class NoteDialog : public QWidget
         QString content() const;
         QString title() const;
         Note * note();
-        void setContent(const QString & content);
-        void setTitle(const QString & content);
         void setNote(Note* note);
         void setFocus();
         void update();

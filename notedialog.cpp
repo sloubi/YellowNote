@@ -20,8 +20,7 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
     // Si on est en modification, on remplit les champs
     if (note != 0)
     {
-        setTitle(note->title());
-        setContent(note->content());
+        m_noteEdit->update(note->title(), note->content());
     }
 
     QAction *actionInfos = new QAction("&Infos", this);
@@ -82,16 +81,6 @@ QString NoteDialog::title() const
 Note * NoteDialog::note()
 {
     return m_note;
-}
-
-void NoteDialog::setTitle(const QString & title)
-{
-    m_noteEdit->setTitle(title);
-}
-
-void NoteDialog::setContent(const QString & content)
-{
-    m_noteEdit->setContent(content);
 }
 
 void NoteDialog::setNote(Note* note)
@@ -247,12 +236,12 @@ void NoteDialog::deleteMe()
     close();
 }
 
+// Mise à jour d'affichage
 void NoteDialog::update()
 {
     if (m_note)
     {
-        setTitle(m_note->title());
-        setContent(m_note->content());
+        m_noteEdit->update(m_note->title(), m_note->content());
     }
     else
     {

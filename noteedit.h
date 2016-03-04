@@ -23,6 +23,7 @@ public:
     bool hasChanged();
     void setNoChange();
     void clear();
+    void update(const QString& title, const QString& content);
 
 protected slots:
     void handleChanging(const QString & text = "");
