@@ -52,6 +52,7 @@ class Note
         void setDeleteInDb();
         int lastInsertId();
         void updateDisplay();
+        void addTag(const QString& name);
 
     private:
         int m_id;

@@ -3,6 +3,7 @@
 #include "notelistwidgetitem.h"
 #include "notedialog.h"
 #include "notepanel.h"
+#include "tag/tagwidget.h"
 
 Note::Note()
 {
@@ -371,4 +372,27 @@ void Note::updateDisplay()
 
     if (m_notePanel)
         m_notePanel->update();
+}
+
+void Note::addTag(const QString& name)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery q(db);
+
+    // Récupération de tous les tags existants
+    QMap<QString, int> tags = TagWidget::all();
+    int tagId = tags.value(name);
+
+    // Création du tag si il n'existe pas
+    if (!tagId)
+    {
+        tagId = TagWidget::insertInDb(name);
+    }
+
+    // Ajout du tag à la note
+    q.prepare("INSERT INTO notes_tags('note_id', 'tag_id') "
+              "VALUES (:note_id, :tag_id)");
+    q.bindValue(":note_id", m_id);
+    q.bindValue(":tag_id", tagId);
+    !q.exec();
 }

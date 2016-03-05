@@ -6,6 +6,7 @@
         <file alias="refresh">icons/Refresh.gif</file>
         <file alias="menu">icons/menu.png</file>
         <file alias="logo">yellownote.png</file>
+        <file alias="tag">icons/Tag.png</file>
     </qresource>
     <qresource prefix="/config">
         <file>oauth.ini</file>

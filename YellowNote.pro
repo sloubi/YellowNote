@@ -21,7 +21,11 @@ SOURCES += \
     hotkeythread.cpp \
     noteedit.cpp \
     notepanel.cpp \
-    about.cpp
+    about.cpp \
+    tag/tagcontainer.cpp \
+    tag/tagedit.cpp \
+    tag/tagwidget.cpp \
+    tag/tag.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -42,7 +46,11 @@ HEADERS += \
     hotkeythread.h \
     noteedit.h \
     notepanel.h \
-    about.h
+    about.h \
+    tag/tagcontainer.h \
+    tag/tagedit.h \
+    tag/tagwidget.h \
+    tag/tag.h
 
 RC_FILE = app.rc
 

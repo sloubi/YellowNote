@@ -3,6 +3,7 @@
 
 #include <QtWidgets>
 #include "noteedit.h"
+#include "tag/tagcontainer.h"
 class Note;
 
 class NoteDialog : public QWidget
@@ -38,6 +39,7 @@ class NoteDialog : public QWidget
         QSettings *m_settings;
         Note *m_note;
         QAction *m_actionDelete;
+        TagContainer *m_tags;
 };
 
 #endif // NOTEDIALOG_H

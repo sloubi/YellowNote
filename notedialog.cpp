@@ -33,12 +33,16 @@ NoteDialog::NoteDialog(Note *note) : QWidget()
     m_actionDelete->setIconText("Supprimer");
     connect(m_actionDelete, SIGNAL(triggered()), this, SLOT(deleteMe()));
 
+    m_tags = new TagContainer(m_note, this);
+
     QWidget *spacerWidget = new QWidget(this);
     spacerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     spacerWidget->setVisible(true);
 
     QToolBar *toolBar = new QToolBar;
     toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    toolBar->setIconSize(QSize(24, 24));
+    toolBar->addWidget(m_tags);
     toolBar->addWidget(spacerWidget);
     toolBar->addAction(actionInfos);
     toolBar->addAction(m_actionDelete);
@@ -87,6 +91,7 @@ void NoteDialog::setNote(Note* note)
 {
     m_note = note;
     attachToNote();
+    m_tags->setNote(note);
 }
 
 void NoteDialog::changeEvent(QEvent *event)
@@ -243,6 +248,7 @@ void NoteDialog::update()
     if (m_note)
     {
         m_noteEdit->update(m_note->title(), m_note->content());
+        m_tags->update();
     }
     else
     {
