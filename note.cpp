@@ -178,9 +178,8 @@ void Note::writeToFile(const QList<Note> & notes)
 
 void Note::createNotesTableIfNotExists()
 {
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery query(db);
-    query.exec("CREATE TABLE 'notes' ("
+    SqlQuery query;
+    query.exec("CREATE TABLE IF NOT EXISTS 'notes' ("
                    "'id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
                    "'shared_key' VARCHAR NOT NULL,"
                    "'title' VARCHAR NOT NULL,"
@@ -195,36 +194,28 @@ void Note::createNotesTableIfNotExists()
 
 QList<Note*> Note::loadFromDb()
 {
-    QSqlDatabase db = QSqlDatabase::database();
     QList<Note*> notes;
 
     createNotesTableIfNotExists();
 
-    QSqlQuery query(db);
-
-    if (query.exec("SELECT id, shared_key, title, content, to_sync, to_delete, "
+    SqlQuery query;
+    query.exec("SELECT id, shared_key, title, content, to_sync, to_delete, "
                    "datetime(created_at) AS created_at, "
                    "datetime(updated_at) AS updated_at, "
                    "datetime(synced_at) AS synced_at "
                    "FROM notes "
-                   "WHERE to_delete = 0"))
-    {
-        while (query.next())
-        {
-            Note *note = new Note(query.value(2).toString(), query.value(3).toString(), query.value(1).toString());
-            note->setId(query.value(0).toInt());
-            note->setCreatedAt(query.value(6).toString());
-            note->setUpdatedAt(query.value(7).toString());
-            note->setSyncedAt(query.value(8).toString());
-            note->setToSync(query.value(4).toBool());
-            notes.append(note);
-        }
-    }
-    else
-    {
-        qDebug() << "sql error : " << query.lastError();
-    }
+                   "WHERE to_delete = 0");
 
+    while (query.next())
+    {
+        Note *note = new Note(query.value(2).toString(), query.value(3).toString(), query.value(1).toString());
+        note->setId(query.value(0).toInt());
+        note->setCreatedAt(query.value(6).toString());
+        note->setUpdatedAt(query.value(7).toString());
+        note->setSyncedAt(query.value(8).toString());
+        note->setToSync(query.value(4).toBool());
+        notes.append(note);
+    }
     return notes;
 }
 
@@ -238,8 +229,7 @@ void Note::addToDb(bool createdNow)
         m_updatedAt = QDateTime::currentDateTime();
     }
 
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery q(db);
+    SqlQuery q;
     q.prepare("INSERT INTO notes('shared_key', 'title', 'content', 'to_sync', 'created_at', 'updated_at') "
               "VALUES (:shared_key, :title, :content, :to_sync, :created_at, :updated_at)");
     q.bindValue(":shared_key", m_sharedKey);
@@ -248,11 +238,7 @@ void Note::addToDb(bool createdNow)
     q.bindValue(":to_sync", m_toSync);
     q.bindValue(":created_at", SqlUtils::date(m_createdAt));
     q.bindValue(":updated_at", SqlUtils::date(m_updatedAt));
-
-    if (!q.exec())
-    {
-        qDebug() << "sql error : " << q.lastError();
-    }
+    q.exec();
 
     m_id = SqlUtils::lastInsertId();
 }
@@ -262,8 +248,7 @@ void Note::editInDb(bool updatedNow)
     if (updatedNow)
         m_updatedAt = QDateTime::currentDateTime();
 
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery q(db);
+    SqlQuery q;
     q.prepare("UPDATE notes SET "
               "title = :title, content = :content, to_sync = :to_sync, updated_at = :updated_at "
               "WHERE id = :id");
@@ -277,16 +262,14 @@ void Note::editInDb(bool updatedNow)
 
 void Note::deleteInDb()
 {
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery q(db);
+    SqlQuery q;
     q.prepare("DELETE FROM notes WHERE to_delete = 1");
     q.exec();
 }
 
 void Note::deleteInDb(const QString & sharedKey)
 {
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery q(db);
+    SqlQuery q;
     q.prepare("DELETE FROM notes WHERE shared_key = :shared_key");
     q.bindValue(":shared_key", sharedKey);
     q.exec();
@@ -302,8 +285,7 @@ void Note::setDeleteInDb()
     if (m_syncedAt.isNull())
         deleteInDb(m_sharedKey);
 
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery q(db);
+    SqlQuery q;
     q.prepare("UPDATE notes SET to_delete = 1, to_sync = 1 WHERE id = :id");
     q.bindValue(":id", m_id);
     q.exec();
@@ -314,8 +296,7 @@ void Note::setSyncedNow()
     m_toSync = false;
     m_syncedAt = QDateTime::currentDateTime();
 
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery q(db);
+    SqlQuery q;
     q.prepare("UPDATE notes SET "
               "to_sync = 0, "
               "synced_at = :synced_at "
@@ -327,8 +308,7 @@ void Note::setSyncedNow()
 
 bool Note::exists(const QString & sharedKey)
 {
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery q(db);
+    SqlQuery q;
     q.prepare("SELECT COUNT(*) FROM notes WHERE shared_key = :shared_key");
     q.bindValue(":shared_key", sharedKey);
     q.exec();
@@ -338,10 +318,9 @@ bool Note::exists(const QString & sharedKey)
 
 QString Note::getJsonNotesToSync()
 {
-    QSqlDatabase db = QSqlDatabase::database();
     QJsonArray jsonNotes;
 
-    QSqlQuery query(db);
+    SqlQuery query;
     query.exec("SELECT shared_key, title, content, to_delete, "
                    "datetime(created_at) AS created_at, "
                    "datetime(updated_at) AS updated_at "
@@ -376,9 +355,6 @@ void Note::updateDisplay()
 
 void Note::addTag(const QString& name)
 {
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery q(db);
-
     // Récupération de tous les tags existants
     QMap<QString, int> tags = TagWidget::all();
     int tagId = tags.value(name);
@@ -390,6 +366,7 @@ void Note::addTag(const QString& name)
     }
 
     // Ajout du tag à la note
+    SqlQuery q;
     q.prepare("INSERT INTO notes_tags('note_id', 'tag_id') "
               "VALUES (:note_id, :tag_id)");
     q.bindValue(":note_id", m_id);

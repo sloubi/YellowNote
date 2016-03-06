@@ -1,5 +1,8 @@
 #include "sqlutils.h"
 #include <QCoreApplication>
+#include <QDebug>
+#include <QSqlDatabase>
+#include <QSqlError>
 
 QString SqlUtils::date(const QDateTime & dateTime)
 {
@@ -38,4 +41,24 @@ QString SqlUtils::dbPath()
 {
     QSqlDatabase db = QSqlDatabase::database();
     return QCoreApplication::applicationDirPath() + "/" + db.databaseName();
+}
+
+bool SqlQuery::exec()
+{
+    bool result = QSqlQuery::exec();
+    if (!result)
+    {
+        qDebug() << lastQuery() << "ERROR: " << lastError();
+    }
+    return result;
+}
+
+bool SqlQuery::exec(const QString & query)
+{
+    bool result = QSqlQuery::exec(query);
+    if (!result)
+    {
+        qDebug() << lastQuery() << "ERROR: " << lastError();
+    }
+    return result;
 }

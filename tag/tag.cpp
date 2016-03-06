@@ -1,5 +1,5 @@
 #include "tag.h"
-#include <QtSql>
+#include "sqlutils.h"
 
 Tag::Tag()
 {
@@ -36,8 +36,7 @@ QList<Tag*> Tag::findByNoteId(int note_id)
 {
     QList<Tag*> tags;
 
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery query(db);
+    SqlQuery query;
     query.prepare("SELECT t.id, t.name "
                    "FROM tags t "
                    "INNER JOIN notes_tags nt ON t.id = nt.tag_id "

@@ -2,7 +2,6 @@
 #define SQLUTILS_H
 
 #include <QDateTime>
-#include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QVariant>
 
@@ -15,6 +14,13 @@ public:
     static int lastInsertId();
     static QString sqlLiteVersion();
     static QString dbPath();
+};
+
+class SqlQuery : public QSqlQuery
+{
+public:
+    bool exec();
+    bool exec(const QString & query);
 };
 
 #endif // SQLUTILS_H
