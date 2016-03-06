@@ -8,12 +8,15 @@
 class SqlUtils
 {
 public:
+    static void openDb();
     static QString date(const QDateTime & dateTime);
     static QDateTime date(const QString & string);
     static QString getNow();
     static int lastInsertId();
     static QString sqlLiteVersion();
     static QString dbPath();
+protected:
+    static void createTables();
 };
 
 class SqlQuery : public QSqlQuery

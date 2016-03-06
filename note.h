@@ -2,11 +2,11 @@
 #define NOTE_H
 
 #include "sqlutils.h"
+#include <QtSql>
 #include <QString>
 #include <QFile>
 #include <QList>
 #include <QTextStream>
-#include <QtSql>
 class NoteListWidgetItem;
 class NoteDialog;
 class NotePanel;
@@ -40,7 +40,6 @@ class Note
         void setNotePanel(NotePanel *notePanel);
         static QList<Note> readFromFile();
         static void writeToFile(const QList<Note> & notes);
-        static void createNotesTableIfNotExists();
         static QString getJsonNotesToSync();
         static QList<Note *> loadFromDb();
         void addToDb(bool createdNow = true);

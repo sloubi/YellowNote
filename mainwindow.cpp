@@ -148,9 +148,7 @@ void MainWindow::initialize()
     m_hotKeyThread->start();
 
     // Initialise la connexion à la base de données
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("notes.db");
-    db.open();
+    SqlUtils::openDb();
 
     // Création de la liste
     QList<Note*> notes = Note::loadFromDb();

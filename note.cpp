@@ -176,27 +176,9 @@ void Note::writeToFile(const QList<Note> & notes)
     }
 }
 
-void Note::createNotesTableIfNotExists()
-{
-    SqlQuery query;
-    query.exec("CREATE TABLE IF NOT EXISTS 'notes' ("
-                   "'id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
-                   "'shared_key' VARCHAR NOT NULL,"
-                   "'title' VARCHAR NOT NULL,"
-                   "'content' TEXT NOT NULL,"
-                   "'to_sync' BOOL NOT NULL DEFAULT (0),"
-                   "'to_delete' BOOL NOT NULL DEFAULT (0),"
-                   "'created_at' DATETIME NOT NULL,"
-                   "'updated_at' DATETIME NOT NULL,"
-                   "'synced_at' DATETIME NULL DEFAULT (NULL)"
-               ")");
-}
-
 QList<Note*> Note::loadFromDb()
 {
     QList<Note*> notes;
-
-    createNotesTableIfNotExists();
 
     SqlQuery query;
     query.exec("SELECT id, shared_key, title, content, to_sync, to_delete, "
