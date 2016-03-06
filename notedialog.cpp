@@ -133,7 +133,7 @@ bool NoteDialog::save()
         {
             // Création de la note
             Note *note = new Note(title(), content());
-            note->addToDb();
+            note->save();
             setNote(note);
 
             // Ajout de la note dans la liste
@@ -147,21 +147,8 @@ bool NoteDialog::save()
             m_note->setTitle(title());
             m_note->setContent(content());
             m_note->setToSync(true);
-            m_note->editInDb();
-
-            // Mise à jour de la note dans la liste
-            m_note->item()->update();
-
-            // Si la note est dans le panneau, on le met à jour
-            if (m_note->notePanel())
-            {
-                m_note->notePanel()->update();
-            }
+            m_note->save();
         }
-
-        // Mise à jour du titre (après génération automatique)
-        m_noteEdit->setTitle(m_note->title());
-        setWindowTitle(m_note->title());
 
         // Enregistrement terminée, il n'y a donc plus de changements en attente
         m_noteEdit->setNoChange();
@@ -247,6 +234,7 @@ void NoteDialog::update()
 {
     if (m_note)
     {
+        setWindowTitle(m_note->title());
         m_noteEdit->update(m_note->title(), m_note->content());
         m_tags->update();
     }

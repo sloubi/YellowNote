@@ -26,7 +26,6 @@ class Note
         bool toSync() const;
         NoteListWidgetItem* item();
         NoteDialog* noteDialog();
-        NotePanel* notePanel();
         void setTitle(const QString & title);
         void setContent(const QString & content);
         void setId(const int id);
@@ -37,21 +36,23 @@ class Note
         void setToSync(const bool toSync);
         void setItem(NoteListWidgetItem* item);
         void setNoteDialog(NoteDialog *noteDialog);
-        void setNotePanel(NotePanel *notePanel);
         static QList<Note> readFromFile();
         static void writeToFile(const QList<Note> & notes);
         static QString getJsonNotesToSync();
         static QList<Note *> loadFromDb();
-        void addToDb(bool createdNow = true);
-        void editInDb(bool updatedNow = true);
         static void deleteInDb();
         static void deleteInDb(const QString & sharedKey);
         static bool exists(const QString & sharedKey);
         void setSyncedNow();
         void setDeleteInDb();
         int lastInsertId();
-        void updateDisplay();
         void addTag(const QString& name);
+        void save(bool now = true);
+        bool isInPanel();
+
+    protected:
+        void addToDb(bool createdNow);
+        void editInDb(bool updatedNow);
 
     private:
         int m_id;
@@ -65,7 +66,6 @@ class Note
         QDateTime m_syncedAt;
         NoteListWidgetItem *m_item;
         NoteDialog *m_noteDialog;
-        NotePanel *m_notePanel;
 };
 
 #endif // NOTE_H

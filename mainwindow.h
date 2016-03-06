@@ -47,7 +47,6 @@ public slots:
     void checkUpdates();
     void onRefreshTokenFinished(QNetworkReply::NetworkError error);
     void setSyncButtonIcon(int frame);
-    void handleCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
     void doExport();
 
 private:

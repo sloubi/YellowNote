@@ -2,6 +2,9 @@
 #include "note.h"
 #include <QDebug>
 
+// Initialisation du singleton à NULL
+NotePanel *NotePanel::m_instance = NULL;
+
 NotePanel::NotePanel() : NoteDialog()
 {
     // La perte du focus au changement de fenêtre ne peut pas fonctionner
@@ -11,6 +14,16 @@ NotePanel::NotePanel() : NoteDialog()
     // On écrase le slot de suppression
     m_actionDelete->disconnect();
     connect(m_actionDelete, SIGNAL(triggered()), this, SLOT(deleteMe()));
+}
+
+NotePanel* NotePanel::getInstance()
+{
+    if (m_instance == NULL)
+    {
+        m_instance =  new NotePanel;
+    }
+
+    return m_instance;
 }
 
 // Sucharge de cette fonction car on ne doit pas fermer le widget
@@ -35,16 +48,19 @@ void NotePanel::attachToNote()
     return;
 }
 
-bool NotePanel::save()
+void NotePanel::handleNoteChanged(QListWidgetItem* current, QListWidgetItem* previous)
 {
-    bool saved = NoteDialog::save();
-
-    // Si on a sauvegardé le panneau de la note
-    // et que la note est ouverte dans un dialog, on met à jour le dialog
-    if (saved && m_note->noteDialog())
+    if (current)
     {
-        m_note->noteDialog()->update();
+        // Mise à jour du panneau avec la note sélectionné
+        NoteListWidgetItem *currentNoteItem = static_cast<NoteListWidgetItem*>(current);
+        setNote(currentNoteItem->note());
     }
-
-    return saved;
+    // Si aucune note n'est sélectionnée (plus aucune note dans la liste)
+    else
+    {
+        // On vide la panneau
+        setNote(0);
+    }
+    update();
 }

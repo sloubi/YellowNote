@@ -14,8 +14,8 @@ MainWindow::MainWindow() : QMainWindow()
     // Récupération des options
     m_settings = new QSettings("yellownote.ini", QSettings::IniFormat);
 
-    createList();
     createPanel();
+    createList();
     createActions();
 
     initialize();
@@ -36,14 +36,14 @@ void MainWindow::createList()
 
     QObject::connect(m_listWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openEditNoteDialog(QListWidgetItem*)));
     QObject::connect(m_listWidget, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
-                     this, SLOT(handleCurrentItemChanged(QListWidgetItem*, QListWidgetItem*)));
+                     m_notePanel, SLOT(handleNoteChanged(QListWidgetItem*, QListWidgetItem*)));
 
     setCentralWidget(m_listWidget);
 }
 
 void MainWindow::createPanel()
 {
-    m_notePanel = new NotePanel();
+    m_notePanel = NotePanel::getInstance();
     QObject::connect(m_notePanel, SIGNAL(newNote(Note*)), this, SLOT(addNoteToList(Note*)));
     QObject::connect(m_notePanel, SIGNAL(deletionRequested(Note*)), this, SLOT(deleteNote(Note*)));
 
@@ -381,38 +381,28 @@ void MainWindow::onSyncRequestFinished(int id, QNetworkReply::NetworkError error
                 // Récupération des notes du serveur
                 else
                 {
-                    // Modification d'une note déjà existante
-                    if (Note::exists(sharedKey))
-                    {
-                        // Récupération de la note dans la liste
-                        Note *note = m_notes[sharedKey];
-
-                        // Assignation des nouvelles valeurs, MAJ en base
-                        note->setTitle(obj["title"].toString());
-                        note->setContent(obj["content"].toString());
-                        note->setUpdatedAt(obj["updated_at"].toString());
-                        note->editInDb(false);
-                        note->setSyncedNow();
-
-                        // Mise à jour de l'affichage
-                        note->updateDisplay();
-                    }
-                    // Nouvelle note
+                    Note *note = 0;
+                    // Récupération de la note dans la liste
+                    if (m_notes.contains(sharedKey))
+                        note = m_notes[sharedKey];
+                    // Ou création d'une nouvelle note
                     else
-                    {
-                        Note *note = new Note(
-                            obj["title"].toString(),
-                            obj["content"].toString(),
-                            obj["shared_key"].toString()
-                        );
-                        note->setCreatedAt(obj["created_at"].toString());
-                        note->setUpdatedAt(obj["updated_at"].toString());
-                        note->addToDb(false);
-                        note->setSyncedNow();
+                        note = new Note();
 
-                        // Mise à jour de l'affichage
+                    // Assignation des valeurs récupérées du serveur
+                    note->setSharedKey(sharedKey);
+                    note->setTitle(obj["title"].toString());
+                    note->setContent(obj["content"].toString());
+                    note->setCreatedAt(obj["created_at"].toString());
+                    note->setUpdatedAt(obj["updated_at"].toString());
+
+                    // Ajout de la note dans la liste
+                    if (!note->id())
                         addNoteToList(note);
-                    }
+
+                    // Enregistrement
+                    note->save(false);
+                    note->setSyncedNow();
                 }
             }
         }
@@ -470,35 +460,6 @@ void MainWindow::onRefreshTokenFinished(QNetworkReply::NetworkError error)
         dialog.exec();
     }
 }
-
-void MainWindow::handleCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous)
-{
-    if (current)
-    {
-        NoteListWidgetItem *currentNoteItem = static_cast<NoteListWidgetItem*>(current);
-        // On indique que la note est maintenant affichée sur le panneau
-        currentNoteItem->note()->setNotePanel(m_notePanel);
-
-        // Mise à jour du panneau avec la note sélectionné
-        m_notePanel->setNote(currentNoteItem->note());
-        m_notePanel->update();
-    }
-    // Si aucune note n'est sélectionnée (plus aucune note dans la liste)
-    else
-    {
-        // On vide la panneau
-        m_notePanel->setNote(0);
-        m_notePanel->update();
-    }
-
-    if (previous)
-    {
-        NoteListWidgetItem *previousNoteItem = static_cast<NoteListWidgetItem*>(previous);
-        if (previousNoteItem->note())
-            previousNoteItem->note()->setNotePanel(0);
-    }
-}
-
 
 void MainWindow::doExport()
 {

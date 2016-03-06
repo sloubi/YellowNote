@@ -6,11 +6,12 @@
 #include "tag/tagwidget.h"
 
 Note::Note()
+    : m_id(0)
 {
 }
 
 Note::Note(const QString & title, const QString & content, const QString & sharedKey)
-    : m_title(title), m_content(content), m_sharedKey(sharedKey)
+    : m_id(0), m_title(title), m_content(content), m_sharedKey(sharedKey)
 {
     // Génération d'un titre si il est vide
     // Seulement pour les nouvelles notes du coup
@@ -31,7 +32,6 @@ Note::Note(const QString & title, const QString & content, const QString & share
     m_toSync = true;
     m_item = 0;
     m_noteDialog = 0;
-    m_notePanel = 0;
 }
 
 QString Note::title() const
@@ -84,11 +84,6 @@ NoteDialog* Note::noteDialog()
     return m_noteDialog;
 }
 
-NotePanel* Note::notePanel()
-{
-    return m_notePanel;
-}
-
 void Note::setTitle(const QString & title)
 {
     m_title = title;
@@ -137,11 +132,6 @@ void Note::setItem(NoteListWidgetItem *item)
 void Note::setNoteDialog(NoteDialog *noteDialog)
 {
     m_noteDialog = noteDialog;
-}
-
-void Note::setNotePanel(NotePanel *notePanel)
-{
-    m_notePanel = notePanel;
 }
 
 QList<Note> Note::readFromFile()
@@ -201,9 +191,27 @@ QList<Note*> Note::loadFromDb()
     return notes;
 }
 
+void Note::save(bool now)
+{
+    if (m_id)
+    {
+        editInDb(now);
+
+        if (isInPanel())
+            NotePanel::getInstance()->update();
+        if (m_noteDialog)
+            m_noteDialog->update();
+        m_item->update();
+    }
+    else
+    {
+        addToDb(now);
+    }
+}
+
 void Note::addToDb(bool createdNow)
 {
-    // Si la note vient d'être créée
+    // Si la note vient d'être créée (ce n'est pas le cas lors d'une sync)
     if (createdNow)
     {
         // On met les dates de création/modification à maintenant
@@ -324,17 +332,6 @@ QString Note::getJsonNotesToSync()
     return QJsonDocument(jsonNotes).toJson(QJsonDocument::Compact);
 }
 
-void Note::updateDisplay()
-{
-    m_item->update();
-
-    if (m_noteDialog)
-        m_noteDialog->update();
-
-    if (m_notePanel)
-        m_notePanel->update();
-}
-
 void Note::addTag(const QString& name)
 {
     // Récupération de tous les tags existants
@@ -354,4 +351,9 @@ void Note::addTag(const QString& name)
     q.bindValue(":note_id", m_id);
     q.bindValue(":tag_id", tagId);
     !q.exec();
+}
+
+bool Note::isInPanel()
+{
+    return NotePanel::getInstance()->note() == this;
 }
