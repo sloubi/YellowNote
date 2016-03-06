@@ -30,15 +30,27 @@ NotePanel* NotePanel::getInstance()
 // après une suppression
 void NotePanel::deleteMe()
 {
-    // signal de suppression
     if (m_note)
     {
+        m_note->setDeleteInDb();
+
+        // Fermeture du dialog si il est ouvert
+        if (m_note->noteDialog())
+        {
+            m_note->noteDialog()->setNote(0);
+            m_note->noteDialog()->deleteMe();
+            m_note->setNoteDialog(0);
+        }
+
+        // Suppression de la note dans la liste
         emit deletionRequested(m_note);
     }
+}
 
+void NotePanel::clear()
+{
     m_noteEdit->clear();
     m_noteEdit->setNoChange();
-
     m_note = 0;
 }
 
@@ -55,12 +67,12 @@ void NotePanel::handleNoteChanged(QListWidgetItem* current, QListWidgetItem* pre
         // Mise à jour du panneau avec la note sélectionné
         NoteListWidgetItem *currentNoteItem = static_cast<NoteListWidgetItem*>(current);
         setNote(currentNoteItem->note());
+        update();
     }
     // Si aucune note n'est sélectionnée (plus aucune note dans la liste)
     else
     {
         // On vide la panneau
-        setNote(0);
+        clear();
     }
-    update();
 }

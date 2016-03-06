@@ -266,16 +266,20 @@ void MainWindow::deleteSelectedNote()
     {
         QListWidgetItem *item = selected.first();
         NoteListWidgetItem *noteItem = static_cast<NoteListWidgetItem*>(item);
+        Note *note = noteItem->note();
 
-        noteItem->note()->setDeleteInDb();
-        m_notes.remove(noteItem->note()->sharedKey());
+        note->setDeleteInDb();
 
-        if (noteItem->note()->noteDialog())
+        // Fermeture du dialog si il est ouvert
+        if (note->noteDialog())
         {
-            noteItem->note()->noteDialog()->close();
-            noteItem->note()->setNoteDialog(0);
+            note->noteDialog()->setNote(0);
+            note->noteDialog()->deleteMe();
+            note->setNoteDialog(0);
         }
 
+        // Suppression de la note dans la liste
+        m_notes.remove(note->sharedKey());
         noteItem->setNote(0);
         m_listWidget->takeItem(m_listWidget->row(item));
     }
@@ -285,18 +289,7 @@ void MainWindow::deleteNote(Note *note)
 {
     if (note)
     {
-        note->setDeleteInDb();
         m_notes.remove(note->sharedKey());
-
-        // Attention, on ne ferme le dialog que si la suppression n'a pas
-        // été demandée par le dialog lui-même (car le dialog se ferme tout seul après
-        // l'éxécution du SLOT)
-        QObject* obj = sender();
-        if (note->noteDialog() && obj != note->noteDialog())
-        {
-            note->noteDialog()->close();
-            note->setNoteDialog(0);
-        }
 
         note->item()->setNote(0);
         m_listWidget->takeItem(m_listWidget->row(note->item()));

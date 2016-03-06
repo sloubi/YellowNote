@@ -29,9 +29,11 @@ class NoteDialog : public QWidget
         void newNote(Note *);
         void deletionRequested(Note *);
 
+    public slots:
+        void deleteMe();
+
     protected slots:
         void infos();
-        void deleteMe();
         bool save();
 
     protected:

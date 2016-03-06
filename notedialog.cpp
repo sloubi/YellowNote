@@ -219,11 +219,15 @@ void NoteDialog::deleteMe()
     // c'est important dans le cas où on veut supprimer une note qui n'est pas encore enregistrée
     m_noteEdit->setNoChange();
 
-    // signal de suppression
     if (m_note)
     {
-        emit deletionRequested(m_note);
+        m_note->setDeleteInDb();
+
+        // Suppression du dialog
         m_note->setNoteDialog(0);
+
+        // Suppression de la note dans la liste
+        emit deletionRequested(m_note);
     }
 
     close();

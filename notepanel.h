@@ -12,6 +12,7 @@ class NotePanel : public NoteDialog
 public:
     NotePanel();
     static NotePanel* getInstance();
+    void clear();
 
 protected:
     void attachToNote() Q_DECL_OVERRIDE;
